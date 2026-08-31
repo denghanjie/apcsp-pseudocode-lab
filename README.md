@@ -8,6 +8,8 @@ The easiest option is to double-click `index.html`. On macOS, you can also doubl
 
 No installation, account, network connection, or build step is required for the standalone app.
 
+To inspect a program one statement at a time, choose **Step** or press `F10`. The highlighted row is the next statement to execute; the Console, State, and Robot tabs show the effects of all statements completed so far. While paused, **Run** becomes **Continue**, and **Reset execution** leaves the source code unchanged.
+
 ## What the runner supports
 
 - Assignment with `←` (plus the convenience alias `<-`)
@@ -17,6 +19,7 @@ No installation, account, network connection, or build step is required for the 
 - Strict 1-based lists, list-copy assignment, indexing, `INSERT`, `APPEND`, `REMOVE`, `LENGTH`, and `FOR EACH`
 - Procedures, parameters, calls, and `RETURN`
 - `MOVE_FORWARD`, `ROTATE_LEFT`, `ROTATE_RIGHT`, and `CAN_MOVE(direction)` with an animated grid view
+- Statement-by-statement debugging with **Step** / `F10`, source-line highlighting, and live global, list, and procedure-local state
 - Source-linked syntax/runtime errors and a 100,000-step safety limit
 
 The app also accepts `//` line comments and the ASCII comparison aliases `!=`, `>=`, and `<=`. These are runner conveniences, not notation defined by the Exam Reference Sheet.

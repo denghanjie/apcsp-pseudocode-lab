@@ -456,3 +456,194 @@ test('token and AST nodes carry line/column spans', () => {
   assert.equal(ast.body[1].loc.start.line, 2);
   assert.equal(ast.body[1].expression.args[0].loc.start.column, 9);
 });
+
+test('statement stepping pauses before each line and exposes prior effects', () => {
+  const execution = createExecution('x ← 1\ny ← x + 2\nDISPLAY(y)');
+
+  const first = execution.advanceToNextStatement();
+  assert.equal(first.status, 'running');
+  assert.equal(first.checkpoint.kind, 'statement');
+  assert.equal(first.checkpoint.phase, 'before');
+  assert.equal(first.checkpoint.loc.start.line, 1);
+  assert.deepEqual(first.state.globals, {});
+
+  const second = execution.advanceToNextStatement();
+  assert.equal(second.checkpoint.loc.start.line, 2);
+  assert.deepEqual(second.state.globals, { x: 1 });
+
+  const third = execution.advanceToNextStatement();
+  assert.equal(third.checkpoint.loc.start.line, 3);
+  assert.deepEqual(third.state.globals, { x: 1, y: 3 });
+
+  const completed = execution.advanceToNextStatement();
+  assert.equal(completed.status, 'completed');
+  assert.equal(completed.done, true);
+  assert.equal(completed.checkpoint.phase, 'after');
+  assert.equal(completed.result.ok, true);
+  assert.equal(completed.result.output, '3 ');
+});
+
+test('statement stepping exposes loop iterations without hiding an empty-loop budget', () => {
+  const execution = createExecution(`x ← 0
+REPEAT 2 TIMES
+{
+  x ← x + 1
+}
+DISPLAY(x)`);
+  const pauses = [];
+  for (let guard = 0; guard < 20; guard += 1) {
+    const pause = execution.advanceToNextStatement();
+    if (pause.done) break;
+    pauses.push({
+      line: pause.checkpoint.loc.start.line,
+      kind: pause.checkpoint.kind,
+      iteration: pause.checkpoint.details?.iteration ?? null,
+      x: pause.state.globals.x,
+    });
+  }
+  assert.deepEqual(pauses, [
+    { line: 1, kind: 'statement', iteration: null, x: undefined },
+    { line: 2, kind: 'statement', iteration: null, x: 0 },
+    { line: 2, kind: 'loop-iteration', iteration: 1, x: 0 },
+    { line: 4, kind: 'statement', iteration: null, x: 0 },
+    { line: 2, kind: 'loop-iteration', iteration: 2, x: 1 },
+    { line: 4, kind: 'statement', iteration: null, x: 1 },
+    { line: 6, kind: 'statement', iteration: null, x: 2 },
+  ]);
+  assert.equal(execution.getResult().output, '2 ');
+
+  const infinite = createExecution('REPEAT UNTIL(false)\n{\n}', { stepLimit: 18 });
+  let finalPause;
+  for (let guard = 0; guard < 30; guard += 1) {
+    finalPause = infinite.advanceToNextStatement();
+    if (finalPause.done) break;
+  }
+  assert.equal(finalPause.status, 'error');
+  assert.equal(finalPause.result.error.code, 'STEP_LIMIT');
+  assert.equal(finalPause.result.steps, 18);
+});
+
+test('statement stepping enters procedures and exposes cloned local frames', () => {
+  const execution = createExecution(`PROCEDURE bump(value)
+{
+  value ← value + 1
+  RETURN(value)
+}
+answer ← bump(4)
+DISPLAY(answer)`);
+
+  const caller = execution.advanceToNextStatement();
+  assert.equal(caller.checkpoint.loc.start.line, 6);
+  const body = execution.advanceToNextStatement();
+  assert.equal(body.checkpoint.loc.start.line, 3);
+  assert.deepEqual(body.state.frames[0].locals, { value: 4 });
+
+  body.state.frames[0].locals.value = 999;
+  const returned = execution.advanceToNextStatement();
+  assert.equal(returned.checkpoint.loc.start.line, 4);
+  assert.deepEqual(returned.state.frames[0].locals, { value: 5 });
+
+  const afterCall = execution.advanceToNextStatement();
+  assert.equal(afterCall.checkpoint.loc.start.line, 7);
+  assert.deepEqual(afterCall.state.frames, []);
+  assert.equal(afterCall.state.globals.answer, 5);
+});
+
+test('statement debug snapshots are detached across calls and public views', () => {
+  const execution = createExecution('items ← [[1], 2]\nDISPLAY(items)');
+  execution.advanceToNextStatement();
+  const display = execution.advanceToNextStatement();
+
+  display.state.globals.items[0][0] = 99;
+  display.state.variables.items.push(3);
+  const untouched = execution.snapshot();
+  assert.deepEqual(untouched.globals.items, [[1], 2]);
+  assert.deepEqual(untouched.variables.items, [[1], 2]);
+
+  untouched.variables.items[0][0] = 77;
+  assert.deepEqual(untouched.globals.items, [[1], 2]);
+});
+
+test('runtime errors retain failure-time locals without leaking mutable state', () => {
+  const execution = createExecution(`PROCEDURE breakList(items)
+{
+  items[1] ← 9
+  DISPLAY(items[3])
+}
+source ← [1, 2]
+breakList(source)`);
+
+  let pause;
+  for (let guard = 0; guard < 20; guard += 1) {
+    pause = execution.advanceToNextStatement();
+    if (pause.done) break;
+  }
+
+  assert.equal(pause.status, 'error');
+  assert.equal(pause.result.error.code, 'INVALID_LIST_INDEX');
+  assert.deepEqual(pause.state.globals.source, [1, 2]);
+  assert.deepEqual(pause.state.frames[0].locals.items, [9, 2]);
+  pause.state.frames[0].locals.items[0] = 999;
+  assert.deepEqual(execution.snapshot().frames[0].locals.items, [9, 2]);
+});
+
+test('debug snapshot failures never mask the intended runtime error', () => {
+  const execution = createExecution('DISPLAY(1 / 0)');
+  const originalSnapshot = execution.runtime.snapshot.bind(execution.runtime);
+  let failOnce = true;
+  execution.runtime.snapshot = () => {
+    if (failOnce) {
+      failOnce = false;
+      throw new Error('synthetic debug snapshot failure');
+    }
+    return originalSnapshot();
+  };
+
+  const result = execution.run();
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'DIVISION_BY_ZERO');
+  assert.equal(result.error.phase, 'runtime');
+});
+
+test('statement stepping suspends and resumes one INPUT statement exactly once', () => {
+  const execution = createExecution('x ← INPUT()\nDISPLAY(x)');
+  const assignment = execution.advanceToNextStatement();
+  assert.equal(assignment.checkpoint.loc.start.line, 1);
+
+  const waiting = execution.advanceToNextStatement();
+  assert.equal(waiting.status, 'input-required');
+  assert.equal(waiting.pauseReason, 'input');
+  assert.equal(waiting.checkpoint.phase, 'suspended');
+  assert.deepEqual(waiting.state.globals, {});
+  assert.equal(waiting.state.inputConsumed, 0);
+  assert.equal(waiting.events.length, 0);
+
+  execution.provideInput(7);
+  const resumed = execution.advanceToNextStatement();
+  assert.equal(resumed.checkpoint.loc.start.line, 2);
+  assert.equal(resumed.state.globals.x, 7);
+  assert.equal(resumed.state.inputConsumed, 1);
+  assert.equal(resumed.events.filter((event) => event.type === 'input').length, 1);
+});
+
+test('statement stepping preserves the final result and raw step count', () => {
+  const source = `items ← [1, 2]
+sum ← 0
+FOR EACH item IN items
+{
+  sum ← sum + item
+}
+DISPLAY(sum)`;
+  const expected = runProgram(source);
+  const execution = createExecution(source);
+  let pause;
+  for (let guard = 0; guard < 100; guard += 1) {
+    pause = execution.advanceToNextStatement();
+    if (pause.done) break;
+  }
+  assert.equal(pause.status, 'completed');
+  assert.equal(pause.result.steps, expected.steps);
+  assert.deepEqual(pause.result.globals, expected.globals);
+  assert.deepEqual(pause.result.events, expected.events);
+  assert.equal(pause.result.output, expected.output);
+});

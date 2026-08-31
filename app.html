@@ -62,16 +62,20 @@
             <div class="run-actions">
               <button class="button button-primary" id="run-button" type="button" aria-keyshortcuts="Meta+Enter Control+Enter">
                 <svg aria-hidden="true" viewBox="0 0 24 24" class="icon-fill"><path d="m8 5 11 7-11 7V5Z"/></svg>
-                <span>Run</span>
+                <span id="run-button-label">Run</span>
                 <kbd>⌘ ↵</kbd>
               </button>
-              <button class="button button-quiet" id="stop-button" type="button" disabled aria-keyshortcuts="Escape">
+              <button class="button button-quiet" id="step-button" type="button" aria-keyshortcuts="F10">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path class="icon-fill" d="m6 5 10 7-10 7V5Z"/><path d="M19 5v14"/></svg>
+                <span>Step</span>
+              </button>
+              <button class="button button-quiet" id="stop-button" type="button" hidden aria-keyshortcuts="Escape">
                 <svg aria-hidden="true" viewBox="0 0 24 24" class="icon-fill"><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
                 <span>Stop</span>
               </button>
               <button class="button button-quiet" id="reset-button" type="button">
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 8a8 8 0 1 0 1 6M19 3v5h-5"/></svg>
-                <span>Reset</span>
+                <span id="reset-button-label">Reset</span>
               </button>
             </div>
           </div>
@@ -80,6 +84,7 @@
             <pre class="line-numbers" id="line-numbers" aria-hidden="true">1</pre>
             <div class="code-stage">
               <pre class="code-highlight" id="code-highlight" aria-hidden="true"></pre>
+              <div class="execution-line" id="execution-line" aria-hidden="true" hidden></div>
               <textarea
                 id="code-editor"
                 aria-label="AP CSP pseudocode editor"
@@ -91,11 +96,13 @@
               ></textarea>
             </div>
           </div>
-          <p class="sr-only" id="editor-help">Press Command Enter or Control Enter to run. Lists use one-based indexes.</p>
+          <p class="sr-only" id="editor-help">Press Command Enter or Control Enter to run or continue. Press F10 to step one source line. Lists use one-based indexes.</p>
           <div class="editor-status" aria-label="Editor status">
             <span id="cursor-position">Line 1, Column 1</span>
+            <span id="execution-position" hidden>Paused before line 1</span>
             <span id="line-count">1 line</span>
           </div>
+          <p class="sr-only" id="execution-announcer" role="status" aria-live="polite" aria-atomic="true"></p>
         </section>
 
         <aside class="results-pane" aria-label="Program results">
@@ -105,8 +112,9 @@
           </button>
 
           <div class="results-tabs" role="tablist" aria-label="Result views">
-            <button id="console-tab" role="tab" aria-selected="true" aria-controls="console-panel" type="button">Console</button>
-            <button id="robot-tab" role="tab" aria-selected="false" aria-controls="robot-panel" type="button">Robot</button>
+            <button id="console-tab" role="tab" aria-selected="true" aria-controls="console-panel" tabindex="0" type="button">Console</button>
+            <button id="state-tab" role="tab" aria-selected="false" aria-controls="state-panel" tabindex="-1" type="button">State</button>
+            <button id="robot-tab" role="tab" aria-selected="false" aria-controls="robot-panel" tabindex="-1" type="button">Robot</button>
           </div>
 
           <section class="result-view console-panel" id="console-panel" role="tabpanel" aria-labelledby="console-tab">
@@ -122,6 +130,32 @@
               <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 7 4 5-4 5M11 17h8"/></svg>
               <p>Program output will appear here.</p>
             </div>
+          </section>
+
+          <section class="result-view state-panel" id="state-panel" role="tabpanel" aria-labelledby="state-tab" hidden>
+            <div class="state-heading">
+              <div>
+                <strong>Program state</strong>
+                <small id="frame-context">Global scope</small>
+              </div>
+              <span id="state-step-count">0 operations</span>
+            </div>
+            <div class="state-empty" id="state-empty">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 5h14v14H5zM9 9h6M9 13h3"/></svg>
+              <p>Step through the program to inspect its variables and lists.</p>
+            </div>
+            <section class="state-group" id="variables-group" aria-labelledby="variables-title" hidden>
+              <h2 id="variables-title">Variables</h2>
+              <div class="state-rows" id="variables-output"></div>
+            </section>
+            <section class="state-group" id="lists-group" aria-labelledby="lists-title" hidden>
+              <h2 id="lists-title">Lists <span>1-based indexes</span></h2>
+              <div class="list-state" id="lists-output"></div>
+            </section>
+            <section class="state-group" id="frames-group" aria-labelledby="frames-title" hidden>
+              <h2 id="frames-title">Call frames</h2>
+              <div class="frame-state" id="frames-output"></div>
+            </section>
           </section>
 
           <section class="result-view robot-panel" id="robot-panel" role="tabpanel" aria-labelledby="robot-tab" hidden>

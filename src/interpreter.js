@@ -1263,6 +1263,7 @@ class Runtime {
     this.outputEntries = [];
     this.events = [];
     this.callStack = [];
+    this.lastFailureDebugState = null;
     this.robot = normalizeRobot(options.robot);
     this.robotTrace = this.robot
       ? [
@@ -1287,13 +1288,20 @@ class Runtime {
 
   fail(code, message, nodeOrLoc, extras = {}) {
     const loc = nodeOrLoc?.loc ?? nodeOrLoc ?? this.currentLoc;
+    // Debug state is supplementary: a snapshotting problem must never replace
+    // the structured language error that actually stopped the program.
+    try {
+      this.lastFailureDebugState = this.snapshot();
+    } catch {
+      this.lastFailureDebugState = null;
+    }
     throw languageError('runtime', code, message, loc, {
       ...extras,
       callStack: this.callStack,
     });
   }
 
-  *tick(node, kind = 'node') {
+  *tick(node, kind = 'node', details = null) {
     this.currentLoc = copyLoc(node?.loc ?? node ?? this.currentLoc);
     if (this.steps >= this.stepLimit) {
       this.fail(
@@ -1304,7 +1312,15 @@ class Runtime {
       );
     }
     this.steps += 1;
-    yield { type: 'step', step: this.steps, kind, loc: copyLoc(this.currentLoc) };
+    yield {
+      type: 'step',
+      step: this.steps,
+      kind,
+      phase: 'before',
+      nodeType: node?.type ?? null,
+      loc: copyLoc(this.currentLoc),
+      details: details == null ? null : cloneForPublic(details),
+    };
   }
 
   recordEvent(event) {
@@ -1378,8 +1394,23 @@ class Runtime {
   }
 
   snapshot() {
+    const globals = cloneForPublic(this.global.values);
+    const frames = this.callStack.map((frame, index) => ({
+      name: frame.name,
+      depth: index + 1,
+      callLoc: copyLoc(frame.callLoc),
+      definitionLoc: copyLoc(frame.definitionLoc),
+      locals: cloneForPublic(frame.environment?.values ?? new Map()),
+    }));
+    const locals = frames.length > 0 ? cloneForPublic(frames.at(-1).locals) : {};
     return {
-      globals: cloneForPublic(this.global.values),
+      globals,
+      locals,
+      // Keep the convenience view detached from the two scope-specific views,
+      // including for nested list values.
+      variables: cloneForPublic({ ...globals, ...locals }),
+      frames,
+      currentLoc: copyLoc(this.currentLoc),
       inputConsumed: this.inputCount,
       inputRemaining: cloneForPublic(this.inputQueue.slice(this.inputIndex)),
       robot: publicRobot(this.robot),
@@ -1457,18 +1488,23 @@ class Runtime {
           );
         }
         for (let iteration = 0; iteration < count; iteration += 1) {
-          yield* this.tick(statement, 'loop-iteration');
+          yield* this.tick(statement, 'loop-iteration', {
+            iteration: iteration + 1,
+            total: count,
+          });
           completion = yield* this.executeBlock(statement.body, environment);
           if (completion instanceof ReturnCompletion) break;
         }
         break;
       }
       case 'RepeatUntilStmt': {
+        let iteration = 0;
         for (;;) {
           const condition = yield* this.evaluate(statement.condition, environment);
           this.expectBoolean(condition, statement.condition, 'REPEAT UNTIL condition');
           if (condition) break;
-          yield* this.tick(statement, 'loop-iteration');
+          iteration += 1;
+          yield* this.tick(statement, 'loop-iteration', { iteration, total: null });
           completion = yield* this.executeBlock(statement.body, environment);
           if (completion instanceof ReturnCompletion) break;
         }
@@ -1478,8 +1514,12 @@ class Runtime {
         const source = yield* this.evaluate(statement.iterable, environment);
         this.expectList(source, statement.iterable, 'FOR EACH source');
         const values = cloneLanguageValue(source);
-        for (const value of values) {
-          yield* this.tick(statement, 'loop-iteration');
+        for (let iteration = 0; iteration < values.length; iteration += 1) {
+          const value = values[iteration];
+          yield* this.tick(statement, 'loop-iteration', {
+            iteration: iteration + 1,
+            total: values.length,
+          });
           environment.assign(statement.item, cloneLanguageValue(value));
           completion = yield* this.executeBlock(statement.body, environment);
           if (completion instanceof ReturnCompletion) break;
@@ -1660,6 +1700,7 @@ class Runtime {
       name,
       callLoc: copyLoc(call.loc),
       definitionLoc: copyLoc(declaration.loc),
+      environment: local,
     };
     this.callStack.push(frame);
     try {
@@ -2024,6 +2065,9 @@ export class Execution {
     this.eventCursor = 0;
     this.waitingForInput = null;
     this.resumeValue = NO_RESUME_VALUE;
+    this.lastCheckpoint = null;
+    this.currentCheckpoint = null;
+    this.statementTransitions = 0;
     try {
       this.program =
         typeof sourceOrAst === 'string' ? parseProgram(sourceOrAst) : sourceOrAst;
@@ -2085,6 +2129,29 @@ export class Execution {
     return this;
   }
 
+  _advanceOneYield() {
+    const next =
+      this.resumeValue === NO_RESUME_VALUE
+        ? this.iterator.next()
+        : this.iterator.next(this.takeResumeValue());
+    if (next.done) {
+      this.done = true;
+      return next;
+    }
+    if (next.value?.type === 'input-request') {
+      this.waitingForInput = cloneForPublic(next.value);
+      return next;
+    }
+    if (next.value?.type === 'step') {
+      this.lastCheckpoint = cloneForPublic(next.value);
+      if (next.value.kind === 'statement' || next.value.kind === 'loop-iteration') {
+        this.currentCheckpoint = cloneForPublic(next.value);
+        this.statementTransitions += 1;
+      }
+    }
+    return next;
+  }
+
   step(maxSteps = 1) {
     if (!Number.isSafeInteger(maxSteps) || maxSteps < 1) {
       throw languageError(
@@ -2098,18 +2165,8 @@ export class Execution {
     let checkpoints = 0;
     while (!this.done && !this.waitingForInput && checkpoints < maxSteps) {
       try {
-        const next =
-          this.resumeValue === NO_RESUME_VALUE
-            ? this.iterator.next()
-            : this.iterator.next(this.takeResumeValue());
-        if (next.done) {
-          this.done = true;
-          break;
-        }
-        if (next.value?.type === 'input-request') {
-          this.waitingForInput = cloneForPublic(next.value);
-          break;
-        }
+        const next = this._advanceOneYield();
+        if (next.done || next.value?.type === 'input-request') break;
         checkpoints += 1;
       } catch (error) {
         this.error = normalizeError(error, this.runtime);
@@ -2125,7 +2182,75 @@ export class Execution {
       waitingForInput: cloneForPublic(this.waitingForInput),
       steps: this.runtime?.steps ?? 0,
       events,
+      checkpoint: cloneForPublic(this.lastCheckpoint),
+      currentStatement: cloneForPublic(this.currentCheckpoint),
       result: this.done ? this.getResult() : null,
+    };
+  }
+
+  /**
+   * Advance to the next visible source boundary. The returned checkpoint is
+   * paused before that statement or loop iteration executes, so its state
+   * contains every effect produced by the previously highlighted line.
+   */
+  advanceToNextStatement() {
+    const startedAtEvent = this.runtime?.events.length ?? 0;
+    while (!this.done && !this.waitingForInput) {
+      try {
+        const next = this._advanceOneYield();
+        if (next.done || next.value?.type === 'input-request') break;
+        if (
+          next.value?.type === 'step' &&
+          (next.value.kind === 'statement' || next.value.kind === 'loop-iteration')
+        ) {
+          break;
+        }
+      } catch (error) {
+        this.error = normalizeError(error, this.runtime);
+        this.done = true;
+      }
+    }
+
+    const events = this.runtime
+      ? cloneForPublic(this.runtime.events.slice(startedAtEvent))
+      : [];
+    this.eventCursor = this.runtime?.events.length ?? 0;
+    const terminalResult = this.done ? this.getResult() : null;
+    const status = this.waitingForInput
+      ? 'input-required'
+      : this.done
+        ? this.error
+          ? 'error'
+          : 'completed'
+        : 'running';
+    const pauseReason = this.waitingForInput
+      ? 'input'
+      : this.done
+        ? this.error
+          ? 'error'
+          : 'completed'
+        : this.currentCheckpoint?.kind ?? 'statement';
+    const checkpoint = cloneForPublic(this.currentCheckpoint);
+    if (checkpoint) {
+      checkpoint.phase = this.waitingForInput
+        ? 'suspended'
+        : this.done
+          ? this.error
+            ? 'failed'
+            : 'after'
+          : 'before';
+    }
+
+    return {
+      status,
+      done: this.done,
+      pauseReason,
+      checkpoint,
+      inputRequest: cloneForPublic(this.waitingForInput),
+      events,
+      state: this.snapshot(),
+      statementTransitions: this.statementTransitions,
+      result: terminalResult,
     };
   }
 
@@ -2251,9 +2376,17 @@ export class Execution {
 
   snapshot() {
     return this.runtime
-      ? this.runtime.snapshot()
+      ? cloneForPublic(
+          this.error && this.runtime.lastFailureDebugState
+            ? this.runtime.lastFailureDebugState
+            : this.runtime.snapshot(),
+        )
       : {
           globals: {},
+          locals: {},
+          variables: {},
+          frames: [],
+          currentLoc: null,
           inputConsumed: 0,
           inputRemaining: [],
           robot: null,
@@ -2292,8 +2425,15 @@ export class Execution {
       outputEntries: [...state.outputEntries],
       events: cloneForPublic(state.events),
       globals: cloneForPublic(state.globals),
+      locals: cloneForPublic(state.locals),
+      variables: cloneForPublic(state.variables),
+      frames: cloneForPublic(state.frames),
       state: {
         globals: cloneForPublic(state.globals),
+        locals: cloneForPublic(state.locals),
+        variables: cloneForPublic(state.variables),
+        frames: cloneForPublic(state.frames),
+        currentLoc: copyLoc(state.currentLoc),
         inputConsumed: state.inputConsumed,
         inputRemaining: cloneForPublic(state.inputRemaining),
         robot: cloneForPublic(state.robot),
@@ -2304,6 +2444,11 @@ export class Execution {
       snapshots: cloneForPublic(state.snapshots),
       steps: state.steps,
       inputConsumed: state.inputConsumed,
+      debug: {
+        checkpoint: cloneForPublic(this.currentCheckpoint),
+        lastCheckpoint: cloneForPublic(this.lastCheckpoint),
+        statementTransitions: this.statementTransitions,
+      },
       aliasesUsed: cloneForPublic(this.program?.aliasesUsed ?? []),
       error,
     };

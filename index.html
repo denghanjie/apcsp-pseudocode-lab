@@ -556,8 +556,29 @@ button {
   background: var(--surface);
 }
 
-#code-editor {
+.execution-line {
+  position: absolute;
   z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  border-left: 3px solid var(--blue);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  pointer-events: none;
+}
+
+.execution-line[data-phase="after"] {
+  border-left-color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+}
+
+.execution-line[data-phase="failed"] {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+#code-editor {
+  z-index: 3;
   resize: none;
   color: transparent;
   caret-color: var(--ink-900);
@@ -571,6 +592,10 @@ button {
   background: rgb(7 94 232 / 20%);
 }
 
+.editor-shell.is-debugging #code-editor {
+  cursor: text;
+}
+
 .tok-comment { color: var(--code-comment); }
 .tok-keyword { color: var(--code-keyword); font-weight: 700; }
 .tok-string { color: var(--code-string); }
@@ -579,14 +604,34 @@ button {
 .tok-builtin { color: var(--code-keyword); font-weight: 650; }
 
 .editor-status {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   padding: 0 18px;
   border-top: 1px solid var(--line);
   color: var(--ink-600);
   background: var(--surface-soft);
   font-size: 12px;
+}
+
+#execution-position {
+  overflow: hidden;
+  color: var(--blue);
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#cursor-position,
+#line-count {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#line-count {
+  justify-self: end;
 }
 
 .results-pane {
@@ -618,7 +663,13 @@ button {
   align-items: stretch;
   gap: 7px;
   padding: 0 16px;
+  overflow-x: auto;
   border-bottom: 1px solid var(--line);
+  scrollbar-width: none;
+}
+
+.results-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .results-tabs button {
@@ -716,6 +767,12 @@ button {
   background: var(--blue-soft);
 }
 
+.run-banner.banner-paused {
+  border-color: color-mix(in srgb, var(--blue) 26%, transparent);
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
 .banner-running .banner-icon {
   animation: pulse 1s ease-in-out infinite;
 }
@@ -791,6 +848,264 @@ button {
 .console-empty p {
   margin: 0;
   font-size: 13px;
+}
+
+.state-panel {
+  padding: 14px;
+}
+
+.state-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.state-heading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.state-heading strong {
+  font-size: 14px;
+}
+
+.state-heading small,
+#state-step-count {
+  color: var(--ink-600);
+  font-size: 11px;
+}
+
+#state-step-count {
+  flex: 0 0 auto;
+  padding-top: 2px;
+  font-family: var(--font-code);
+}
+
+.state-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 42px 18px;
+  color: var(--ink-500);
+  text-align: center;
+}
+
+.state-empty svg {
+  width: 38px;
+  height: 38px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+}
+
+.state-empty p {
+  max-width: 260px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.state-group {
+  padding: 14px 0 2px;
+}
+
+.state-group + .state-group {
+  border-top: 1px solid var(--line);
+}
+
+.state-group h2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+  color: var(--ink-800);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.state-group h2 span {
+  color: var(--ink-500);
+  font-size: 10px;
+  font-weight: 620;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.state-rows,
+.list-state,
+.frame-state {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--line);
+}
+
+.state-row {
+  display: grid;
+  grid-template-columns: minmax(84px, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 45px;
+  padding: 7px 10px;
+  background: var(--surface);
+}
+
+.state-row.is-changed,
+.list-state-item.is-changed {
+  box-shadow: inset 3px 0 0 var(--blue);
+  background: color-mix(in srgb, var(--blue-soft) 62%, var(--surface));
+}
+
+.state-key {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.state-key code,
+.state-value,
+.list-index,
+.list-item-value {
+  font-family: var(--font-code);
+}
+
+.state-key code {
+  overflow: hidden;
+  color: var(--ink-900);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.state-key small {
+  overflow: hidden;
+  color: var(--ink-500);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.state-value {
+  min-width: 0;
+  color: var(--blue);
+  font-size: 12px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.list-state-item {
+  padding: 9px 10px 10px;
+  background: var(--surface);
+}
+
+.list-state-item header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.list-state-item header code {
+  color: var(--ink-900);
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.list-state-item header small {
+  color: var(--ink-500);
+  font-size: 10px;
+}
+
+.list-items {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list-items li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  min-height: 24px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: var(--surface-soft);
+}
+
+.list-index {
+  color: var(--ink-500);
+  font-size: 10px;
+  text-align: right;
+}
+
+.list-item-value {
+  min-width: 0;
+  color: var(--ink-800);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.list-empty-value {
+  color: var(--ink-500);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.frame-row {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 43px;
+  padding: 7px 10px;
+  background: var(--surface);
+}
+
+.frame-depth {
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-family: var(--font-code);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.frame-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.frame-copy strong {
+  overflow: hidden;
+  color: var(--ink-900);
+  font-family: var(--font-code);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frame-copy small {
+  color: var(--ink-500);
+  font-size: 10px;
 }
 
 .robot-panel {
@@ -1009,6 +1324,11 @@ button {
 #input-queue::placeholder,
 .reference-search-wrap input::placeholder {
   color: var(--ink-500);
+}
+
+#input-queue[readonly] {
+  color: var(--ink-600);
+  background: var(--surface-soft);
 }
 
 .execution-summary {
@@ -1837,6 +2157,29 @@ dialog::backdrop {
     grid-template-columns: 48px minmax(0, 1fr);
   }
 
+  .editor-status {
+    gap: 7px;
+    padding-right: 12px;
+    padding-left: 12px;
+    font-size: 11px;
+  }
+
+  .editor-status.has-execution #cursor-position {
+    display: none;
+  }
+
+  .editor-status.has-execution {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .editor-status.has-execution #execution-position {
+    justify-self: start;
+  }
+
+  .results-tabs button {
+    min-width: 72px;
+  }
+
   .code-highlight,
   #code-editor {
     padding-right: 12px;
@@ -1903,7 +2246,7 @@ dialog::backdrop {
 }
 
     </style>
-      <!-- Standalone build: generated 2026-08-31T01:54:21.483Z -->
+      <!-- Standalone build: generated 2026-08-31T03:31:47.975Z -->
   </head>
   <body>
     <a class="skip-link" href="#code-editor">Skip to editor</a>
@@ -1957,16 +2300,20 @@ dialog::backdrop {
             <div class="run-actions">
               <button class="button button-primary" id="run-button" type="button" aria-keyshortcuts="Meta+Enter Control+Enter">
                 <svg aria-hidden="true" viewBox="0 0 24 24" class="icon-fill"><path d="m8 5 11 7-11 7V5Z"/></svg>
-                <span>Run</span>
+                <span id="run-button-label">Run</span>
                 <kbd>⌘ ↵</kbd>
               </button>
-              <button class="button button-quiet" id="stop-button" type="button" disabled aria-keyshortcuts="Escape">
+              <button class="button button-quiet" id="step-button" type="button" aria-keyshortcuts="F10">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path class="icon-fill" d="m6 5 10 7-10 7V5Z"/><path d="M19 5v14"/></svg>
+                <span>Step</span>
+              </button>
+              <button class="button button-quiet" id="stop-button" type="button" hidden aria-keyshortcuts="Escape">
                 <svg aria-hidden="true" viewBox="0 0 24 24" class="icon-fill"><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
                 <span>Stop</span>
               </button>
               <button class="button button-quiet" id="reset-button" type="button">
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 8a8 8 0 1 0 1 6M19 3v5h-5"/></svg>
-                <span>Reset</span>
+                <span id="reset-button-label">Reset</span>
               </button>
             </div>
           </div>
@@ -1975,6 +2322,7 @@ dialog::backdrop {
             <pre class="line-numbers" id="line-numbers" aria-hidden="true">1</pre>
             <div class="code-stage">
               <pre class="code-highlight" id="code-highlight" aria-hidden="true"></pre>
+              <div class="execution-line" id="execution-line" aria-hidden="true" hidden></div>
               <textarea
                 id="code-editor"
                 aria-label="AP CSP pseudocode editor"
@@ -1986,11 +2334,13 @@ dialog::backdrop {
               ></textarea>
             </div>
           </div>
-          <p class="sr-only" id="editor-help">Press Command Enter or Control Enter to run. Lists use one-based indexes.</p>
+          <p class="sr-only" id="editor-help">Press Command Enter or Control Enter to run or continue. Press F10 to step one source line. Lists use one-based indexes.</p>
           <div class="editor-status" aria-label="Editor status">
             <span id="cursor-position">Line 1, Column 1</span>
+            <span id="execution-position" hidden>Paused before line 1</span>
             <span id="line-count">1 line</span>
           </div>
+          <p class="sr-only" id="execution-announcer" role="status" aria-live="polite" aria-atomic="true"></p>
         </section>
 
         <aside class="results-pane" aria-label="Program results">
@@ -2000,8 +2350,9 @@ dialog::backdrop {
           </button>
 
           <div class="results-tabs" role="tablist" aria-label="Result views">
-            <button id="console-tab" role="tab" aria-selected="true" aria-controls="console-panel" type="button">Console</button>
-            <button id="robot-tab" role="tab" aria-selected="false" aria-controls="robot-panel" type="button">Robot</button>
+            <button id="console-tab" role="tab" aria-selected="true" aria-controls="console-panel" tabindex="0" type="button">Console</button>
+            <button id="state-tab" role="tab" aria-selected="false" aria-controls="state-panel" tabindex="-1" type="button">State</button>
+            <button id="robot-tab" role="tab" aria-selected="false" aria-controls="robot-panel" tabindex="-1" type="button">Robot</button>
           </div>
 
           <section class="result-view console-panel" id="console-panel" role="tabpanel" aria-labelledby="console-tab">
@@ -2017,6 +2368,32 @@ dialog::backdrop {
               <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 7 4 5-4 5M11 17h8"/></svg>
               <p>Program output will appear here.</p>
             </div>
+          </section>
+
+          <section class="result-view state-panel" id="state-panel" role="tabpanel" aria-labelledby="state-tab" hidden>
+            <div class="state-heading">
+              <div>
+                <strong>Program state</strong>
+                <small id="frame-context">Global scope</small>
+              </div>
+              <span id="state-step-count">0 operations</span>
+            </div>
+            <div class="state-empty" id="state-empty">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 5h14v14H5zM9 9h6M9 13h3"/></svg>
+              <p>Step through the program to inspect its variables and lists.</p>
+            </div>
+            <section class="state-group" id="variables-group" aria-labelledby="variables-title" hidden>
+              <h2 id="variables-title">Variables</h2>
+              <div class="state-rows" id="variables-output"></div>
+            </section>
+            <section class="state-group" id="lists-group" aria-labelledby="lists-title" hidden>
+              <h2 id="lists-title">Lists <span>1-based indexes</span></h2>
+              <div class="list-state" id="lists-output"></div>
+            </section>
+            <section class="state-group" id="frames-group" aria-labelledby="frames-title" hidden>
+              <h2 id="frames-title">Call frames</h2>
+              <div class="frame-state" id="frames-output"></div>
+            </section>
           </section>
 
           <section class="result-view robot-panel" id="robot-panel" role="tabpanel" aria-labelledby="robot-tab" hidden>
@@ -3405,6 +3782,7 @@ class Runtime {
     this.outputEntries = [];
     this.events = [];
     this.callStack = [];
+    this.lastFailureDebugState = null;
     this.robot = normalizeRobot(options.robot);
     this.robotTrace = this.robot
       ? [
@@ -3429,13 +3807,20 @@ class Runtime {
 
   fail(code, message, nodeOrLoc, extras = {}) {
     const loc = nodeOrLoc?.loc ?? nodeOrLoc ?? this.currentLoc;
+    // Debug state is supplementary: a snapshotting problem must never replace
+    // the structured language error that actually stopped the program.
+    try {
+      this.lastFailureDebugState = this.snapshot();
+    } catch {
+      this.lastFailureDebugState = null;
+    }
     throw languageError('runtime', code, message, loc, {
       ...extras,
       callStack: this.callStack,
     });
   }
 
-  *tick(node, kind = 'node') {
+  *tick(node, kind = 'node', details = null) {
     this.currentLoc = copyLoc(node?.loc ?? node ?? this.currentLoc);
     if (this.steps >= this.stepLimit) {
       this.fail(
@@ -3446,7 +3831,15 @@ class Runtime {
       );
     }
     this.steps += 1;
-    yield { type: 'step', step: this.steps, kind, loc: copyLoc(this.currentLoc) };
+    yield {
+      type: 'step',
+      step: this.steps,
+      kind,
+      phase: 'before',
+      nodeType: node?.type ?? null,
+      loc: copyLoc(this.currentLoc),
+      details: details == null ? null : cloneForPublic(details),
+    };
   }
 
   recordEvent(event) {
@@ -3520,8 +3913,23 @@ class Runtime {
   }
 
   snapshot() {
+    const globals = cloneForPublic(this.global.values);
+    const frames = this.callStack.map((frame, index) => ({
+      name: frame.name,
+      depth: index + 1,
+      callLoc: copyLoc(frame.callLoc),
+      definitionLoc: copyLoc(frame.definitionLoc),
+      locals: cloneForPublic(frame.environment?.values ?? new Map()),
+    }));
+    const locals = frames.length > 0 ? cloneForPublic(frames.at(-1).locals) : {};
     return {
-      globals: cloneForPublic(this.global.values),
+      globals,
+      locals,
+      // Keep the convenience view detached from the two scope-specific views,
+      // including for nested list values.
+      variables: cloneForPublic({ ...globals, ...locals }),
+      frames,
+      currentLoc: copyLoc(this.currentLoc),
       inputConsumed: this.inputCount,
       inputRemaining: cloneForPublic(this.inputQueue.slice(this.inputIndex)),
       robot: publicRobot(this.robot),
@@ -3599,18 +4007,23 @@ class Runtime {
           );
         }
         for (let iteration = 0; iteration < count; iteration += 1) {
-          yield* this.tick(statement, 'loop-iteration');
+          yield* this.tick(statement, 'loop-iteration', {
+            iteration: iteration + 1,
+            total: count,
+          });
           completion = yield* this.executeBlock(statement.body, environment);
           if (completion instanceof ReturnCompletion) break;
         }
         break;
       }
       case 'RepeatUntilStmt': {
+        let iteration = 0;
         for (;;) {
           const condition = yield* this.evaluate(statement.condition, environment);
           this.expectBoolean(condition, statement.condition, 'REPEAT UNTIL condition');
           if (condition) break;
-          yield* this.tick(statement, 'loop-iteration');
+          iteration += 1;
+          yield* this.tick(statement, 'loop-iteration', { iteration, total: null });
           completion = yield* this.executeBlock(statement.body, environment);
           if (completion instanceof ReturnCompletion) break;
         }
@@ -3620,8 +4033,12 @@ class Runtime {
         const source = yield* this.evaluate(statement.iterable, environment);
         this.expectList(source, statement.iterable, 'FOR EACH source');
         const values = cloneLanguageValue(source);
-        for (const value of values) {
-          yield* this.tick(statement, 'loop-iteration');
+        for (let iteration = 0; iteration < values.length; iteration += 1) {
+          const value = values[iteration];
+          yield* this.tick(statement, 'loop-iteration', {
+            iteration: iteration + 1,
+            total: values.length,
+          });
           environment.assign(statement.item, cloneLanguageValue(value));
           completion = yield* this.executeBlock(statement.body, environment);
           if (completion instanceof ReturnCompletion) break;
@@ -3802,6 +4219,7 @@ class Runtime {
       name,
       callLoc: copyLoc(call.loc),
       definitionLoc: copyLoc(declaration.loc),
+      environment: local,
     };
     this.callStack.push(frame);
     try {
@@ -4166,6 +4584,9 @@ class Execution {
     this.eventCursor = 0;
     this.waitingForInput = null;
     this.resumeValue = NO_RESUME_VALUE;
+    this.lastCheckpoint = null;
+    this.currentCheckpoint = null;
+    this.statementTransitions = 0;
     try {
       this.program =
         typeof sourceOrAst === 'string' ? parseProgram(sourceOrAst) : sourceOrAst;
@@ -4227,6 +4648,29 @@ class Execution {
     return this;
   }
 
+  _advanceOneYield() {
+    const next =
+      this.resumeValue === NO_RESUME_VALUE
+        ? this.iterator.next()
+        : this.iterator.next(this.takeResumeValue());
+    if (next.done) {
+      this.done = true;
+      return next;
+    }
+    if (next.value?.type === 'input-request') {
+      this.waitingForInput = cloneForPublic(next.value);
+      return next;
+    }
+    if (next.value?.type === 'step') {
+      this.lastCheckpoint = cloneForPublic(next.value);
+      if (next.value.kind === 'statement' || next.value.kind === 'loop-iteration') {
+        this.currentCheckpoint = cloneForPublic(next.value);
+        this.statementTransitions += 1;
+      }
+    }
+    return next;
+  }
+
   step(maxSteps = 1) {
     if (!Number.isSafeInteger(maxSteps) || maxSteps < 1) {
       throw languageError(
@@ -4240,18 +4684,8 @@ class Execution {
     let checkpoints = 0;
     while (!this.done && !this.waitingForInput && checkpoints < maxSteps) {
       try {
-        const next =
-          this.resumeValue === NO_RESUME_VALUE
-            ? this.iterator.next()
-            : this.iterator.next(this.takeResumeValue());
-        if (next.done) {
-          this.done = true;
-          break;
-        }
-        if (next.value?.type === 'input-request') {
-          this.waitingForInput = cloneForPublic(next.value);
-          break;
-        }
+        const next = this._advanceOneYield();
+        if (next.done || next.value?.type === 'input-request') break;
         checkpoints += 1;
       } catch (error) {
         this.error = normalizeError(error, this.runtime);
@@ -4267,7 +4701,75 @@ class Execution {
       waitingForInput: cloneForPublic(this.waitingForInput),
       steps: this.runtime?.steps ?? 0,
       events,
+      checkpoint: cloneForPublic(this.lastCheckpoint),
+      currentStatement: cloneForPublic(this.currentCheckpoint),
       result: this.done ? this.getResult() : null,
+    };
+  }
+
+  /**
+   * Advance to the next visible source boundary. The returned checkpoint is
+   * paused before that statement or loop iteration executes, so its state
+   * contains every effect produced by the previously highlighted line.
+   */
+  advanceToNextStatement() {
+    const startedAtEvent = this.runtime?.events.length ?? 0;
+    while (!this.done && !this.waitingForInput) {
+      try {
+        const next = this._advanceOneYield();
+        if (next.done || next.value?.type === 'input-request') break;
+        if (
+          next.value?.type === 'step' &&
+          (next.value.kind === 'statement' || next.value.kind === 'loop-iteration')
+        ) {
+          break;
+        }
+      } catch (error) {
+        this.error = normalizeError(error, this.runtime);
+        this.done = true;
+      }
+    }
+
+    const events = this.runtime
+      ? cloneForPublic(this.runtime.events.slice(startedAtEvent))
+      : [];
+    this.eventCursor = this.runtime?.events.length ?? 0;
+    const terminalResult = this.done ? this.getResult() : null;
+    const status = this.waitingForInput
+      ? 'input-required'
+      : this.done
+        ? this.error
+          ? 'error'
+          : 'completed'
+        : 'running';
+    const pauseReason = this.waitingForInput
+      ? 'input'
+      : this.done
+        ? this.error
+          ? 'error'
+          : 'completed'
+        : this.currentCheckpoint?.kind ?? 'statement';
+    const checkpoint = cloneForPublic(this.currentCheckpoint);
+    if (checkpoint) {
+      checkpoint.phase = this.waitingForInput
+        ? 'suspended'
+        : this.done
+          ? this.error
+            ? 'failed'
+            : 'after'
+          : 'before';
+    }
+
+    return {
+      status,
+      done: this.done,
+      pauseReason,
+      checkpoint,
+      inputRequest: cloneForPublic(this.waitingForInput),
+      events,
+      state: this.snapshot(),
+      statementTransitions: this.statementTransitions,
+      result: terminalResult,
     };
   }
 
@@ -4393,9 +4895,17 @@ class Execution {
 
   snapshot() {
     return this.runtime
-      ? this.runtime.snapshot()
+      ? cloneForPublic(
+          this.error && this.runtime.lastFailureDebugState
+            ? this.runtime.lastFailureDebugState
+            : this.runtime.snapshot(),
+        )
       : {
           globals: {},
+          locals: {},
+          variables: {},
+          frames: [],
+          currentLoc: null,
           inputConsumed: 0,
           inputRemaining: [],
           robot: null,
@@ -4434,8 +4944,15 @@ class Execution {
       outputEntries: [...state.outputEntries],
       events: cloneForPublic(state.events),
       globals: cloneForPublic(state.globals),
+      locals: cloneForPublic(state.locals),
+      variables: cloneForPublic(state.variables),
+      frames: cloneForPublic(state.frames),
       state: {
         globals: cloneForPublic(state.globals),
+        locals: cloneForPublic(state.locals),
+        variables: cloneForPublic(state.variables),
+        frames: cloneForPublic(state.frames),
+        currentLoc: copyLoc(state.currentLoc),
         inputConsumed: state.inputConsumed,
         inputRemaining: cloneForPublic(state.inputRemaining),
         robot: cloneForPublic(state.robot),
@@ -4446,6 +4963,11 @@ class Execution {
       snapshots: cloneForPublic(state.snapshots),
       steps: state.steps,
       inputConsumed: state.inputConsumed,
+      debug: {
+        checkpoint: cloneForPublic(this.currentCheckpoint),
+        lastCheckpoint: cloneForPublic(this.lastCheckpoint),
+        statementTransitions: this.statementTransitions,
+      },
       aliasesUsed: cloneForPublic(this.program?.aliasesUsed ?? []),
       error,
     };
@@ -5116,6 +5638,8 @@ const elements = {
   copyOutputButton: $("#copy-output-button"),
   cursorPosition: $("#cursor-position"),
   drawerScrim: $("#drawer-scrim"),
+  editorShell: $("#editor-shell"),
+  editorStatus: $(".editor-status"),
   examplesClose: $("#examples-close"),
   examplesList: $("#examples-list"),
   examplesRail: $("#examples-rail"),
@@ -5125,6 +5649,14 @@ const elements = {
   inputQueue: $("#input-queue"),
   lineCount: $("#line-count"),
   lineNumbers: $("#line-numbers"),
+  executionAnnouncer: $("#execution-announcer"),
+  executionLine: $("#execution-line"),
+  executionPosition: $("#execution-position"),
+  frameContext: $("#frame-context"),
+  framesGroup: $("#frames-group"),
+  framesOutput: $("#frames-output"),
+  listsGroup: $("#lists-group"),
+  listsOutput: $("#lists-output"),
   readyDot: $("#ready-dot"),
   referenceButton: $("#reference-button"),
   referenceCategories: $("#reference-categories"),
@@ -5134,6 +5666,7 @@ const elements = {
   referenceResults: $("#reference-results"),
   referenceSearch: $("#reference-search"),
   resetButton: $("#reset-button"),
+  resetButtonLabel: $("#reset-button-label"),
   resetRobotButton: $("#reset-robot-button"),
   robotGrid: $("#robot-grid"),
   robotPanel: $("#robot-panel"),
@@ -5141,8 +5674,14 @@ const elements = {
   robotTab: $("#robot-tab"),
   runBanner: $("#run-banner"),
   runButton: $("#run-button"),
+  runButtonLabel: $("#run-button-label"),
   runMessage: $("#run-message"),
   runtimeInput: $("#runtime-input"),
+  stateEmpty: $("#state-empty"),
+  statePanel: $("#state-panel"),
+  stateStepCount: $("#state-step-count"),
+  stateTab: $("#state-tab"),
+  stepButton: $("#step-button"),
   stepBadge: $("#step-badge"),
   stopButton: $("#stop-button"),
   summaryInputs: $("#summary-inputs"),
@@ -5154,6 +5693,8 @@ const elements = {
   themeButton: $("#theme-button"),
   themeLabel: $("#theme-label"),
   toast: $("#toast"),
+  variablesGroup: $("#variables-group"),
+  variablesOutput: $("#variables-output"),
 };
 
 const STORAGE_KEY = "pseudocode-lab:v1";
@@ -5172,6 +5713,12 @@ const state = {
   selectedReferenceId: "lists",
   abortController: null,
   running: false,
+  execution: null,
+  executionPhase: "idle",
+  executionCheckpoint: null,
+  executionStartedAt: 0,
+  executionSource: "",
+  inspectorValues: new Map(),
   lastFocus: null,
   toastTimer: null,
   robotConfig: DEFAULT_ROBOT,
@@ -5241,6 +5788,88 @@ function syncEditorScroll() {
   elements.codeHighlight.scrollTop = elements.codeEditor.scrollTop;
   elements.codeHighlight.scrollLeft = elements.codeEditor.scrollLeft;
   elements.lineNumbers.scrollTop = elements.codeEditor.scrollTop;
+  positionExecutionLine();
+}
+
+function sourceLocation(value) {
+  const loc = value?.loc ?? value?.primaryLoc ?? value?.location ?? value;
+  const start = loc?.start ?? loc;
+  const line = Number(start?.line ?? value?.line ?? 0);
+  const column = Number(start?.column ?? value?.column ?? 1);
+  return line > 0 ? { line, column: Math.max(1, column || 1) } : null;
+}
+
+function positionExecutionLine() {
+  if (elements.executionLine.hidden) return;
+  const line = Number(elements.executionLine.dataset.line || 0);
+  if (line < 1) return;
+  const editorStyle = getComputedStyle(elements.codeEditor);
+  const lineHeight = Number.parseFloat(editorStyle.lineHeight) || 28;
+  const paddingTop = Number.parseFloat(editorStyle.paddingTop) || 0;
+  const top = paddingTop + (line - 1) * lineHeight - elements.codeEditor.scrollTop;
+  elements.executionLine.style.height = `${lineHeight}px`;
+  elements.executionLine.style.transform = `translateY(${top}px)`;
+}
+
+function scrollExecutionLineIntoView(line) {
+  const editorStyle = getComputedStyle(elements.codeEditor);
+  const lineHeight = Number.parseFloat(editorStyle.lineHeight) || 28;
+  const paddingTop = Number.parseFloat(editorStyle.paddingTop) || 0;
+  const lineTop = paddingTop + (line - 1) * lineHeight;
+  const lineBottom = lineTop + lineHeight;
+  const visibleTop = elements.codeEditor.scrollTop;
+  const visibleBottom = visibleTop + elements.codeEditor.clientHeight;
+  if (lineTop < visibleTop + lineHeight) {
+    elements.codeEditor.scrollTop = Math.max(0, lineTop - lineHeight * 2);
+  } else if (lineBottom > visibleBottom - lineHeight) {
+    elements.codeEditor.scrollTop = Math.max(0, lineBottom - elements.codeEditor.clientHeight + lineHeight * 2);
+  }
+  syncEditorScroll();
+}
+
+function clearExecutionLocation() {
+  state.executionCheckpoint = null;
+  elements.executionLine.hidden = true;
+  elements.executionLine.removeAttribute("data-line");
+  elements.executionLine.removeAttribute("data-phase");
+  elements.executionPosition.hidden = true;
+  elements.editorStatus.classList.remove("has-execution");
+}
+
+function setExecutionLocation(checkpoint, { announce = false, scroll = true } = {}) {
+  const location = sourceLocation(checkpoint);
+  if (!location) {
+    clearExecutionLocation();
+    return;
+  }
+  state.executionCheckpoint = checkpoint;
+  const completed = checkpoint?.phase === "after";
+  const failed = checkpoint?.phase === "failed";
+  const iteration = checkpoint?.details?.iteration;
+  const total = checkpoint?.details?.total;
+  const iterationCopy = iteration
+    ? ` · iteration ${iteration}${Number.isFinite(total) ? ` of ${total}` : ""}`
+    : "";
+  const copy = completed
+    ? `Finished at line ${location.line}`
+    : failed
+      ? `Stopped at line ${location.line}`
+      : `Next line ${location.line}${iterationCopy}`;
+  elements.executionLine.dataset.line = String(location.line);
+  elements.executionLine.dataset.phase = failed ? "failed" : completed ? "after" : "before";
+  elements.executionLine.hidden = false;
+  elements.executionPosition.textContent = copy;
+  elements.executionPosition.hidden = false;
+  elements.editorStatus.classList.add("has-execution");
+  positionExecutionLine();
+  if (scroll) scrollExecutionLineIntoView(location.line);
+  if (announce) {
+    elements.executionAnnouncer.textContent = completed
+      ? `Execution finished at line ${location.line}.`
+      : failed
+        ? `Execution stopped at line ${location.line}.`
+        : `Paused before line ${location.line}${iterationCopy}.`;
+  }
 }
 
 function persistState() {
@@ -5332,12 +5961,139 @@ function getInputValues() {
   return raw.split(/\r?\n/).map(parseInputValue);
 }
 
+function formatStateValue(value, depth = 0) {
+  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "number") return Object.is(value, -0) ? "0" : String(value);
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (value == null) return "null";
+  if (Array.isArray(value)) {
+    if (depth >= 3) return "[…]";
+    const values = value.slice(0, 50).map((item) => formatStateValue(item, depth + 1));
+    if (value.length > 50) values.push("…");
+    return `[${values.join(", ")}]`;
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function stateValueSignature(value) {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function appendVariableRow(container, name, value, scope, key, currentValues) {
+  const row = document.createElement("div");
+  row.className = "state-row";
+  const signature = stateValueSignature(value);
+  currentValues.set(key, signature);
+  if (state.inspectorValues.get(key) !== signature) {
+    row.classList.add("is-changed");
+    row.title = "Changed on the latest step";
+  }
+  row.innerHTML = `
+    <span class="state-key"><code>${escapeHtml(name)}</code><small>${escapeHtml(scope)}</small></span>
+    <code class="state-value">${escapeHtml(formatStateValue(value))}</code>
+  `;
+  container.append(row);
+}
+
+function appendListRow(container, name, values, scope, key, currentValues) {
+  const wrapper = document.createElement("article");
+  wrapper.className = "list-state-item";
+  const signature = stateValueSignature(values);
+  currentValues.set(key, signature);
+  if (state.inspectorValues.get(key) !== signature) {
+    wrapper.classList.add("is-changed");
+    wrapper.title = "Changed on the latest step";
+  }
+  const header = document.createElement("header");
+  header.innerHTML = `<code>${escapeHtml(name)}</code><small>${escapeHtml(scope)} · ${values.length} ${values.length === 1 ? "item" : "items"}</small>`;
+  wrapper.append(header);
+  if (values.length === 0) {
+    const empty = document.createElement("span");
+    empty.className = "list-empty-value";
+    empty.textContent = "Empty list";
+    wrapper.append(empty);
+  } else {
+    const list = document.createElement("ol");
+    list.className = "list-items";
+    values.forEach((value, index) => {
+      const item = document.createElement("li");
+      item.innerHTML = `<span class="list-index">${index + 1}</span><code class="list-item-value">${escapeHtml(formatStateValue(value))}</code>`;
+      list.append(item);
+    });
+    wrapper.append(list);
+  }
+  container.append(wrapper);
+}
+
+function renderStateInspector(snapshot = {}) {
+  const globals = snapshot?.globals && typeof snapshot.globals === "object" ? snapshot.globals : {};
+  const frames = Array.isArray(snapshot?.frames) ? snapshot.frames : [];
+  const variables = [];
+  const lists = [];
+  const currentValues = new Map();
+
+  const collect = (values, scope, scopeKey) => {
+    for (const [name, value] of Object.entries(values ?? {})) {
+      const entry = { name, value, scope, key: `${scopeKey}:${name}` };
+      if (Array.isArray(value)) lists.push(entry);
+      else variables.push(entry);
+    }
+  };
+  collect(globals, "Global", "global");
+  for (const frame of frames) {
+    collect(frame.locals, frame.name || `Frame ${frame.depth}`, `frame-${frame.depth}-${frame.name}`);
+  }
+
+  elements.variablesOutput.replaceChildren();
+  elements.listsOutput.replaceChildren();
+  elements.framesOutput.replaceChildren();
+  for (const entry of variables) {
+    appendVariableRow(elements.variablesOutput, entry.name, entry.value, entry.scope, entry.key, currentValues);
+  }
+  for (const entry of lists) {
+    appendListRow(elements.listsOutput, entry.name, entry.value, entry.scope, entry.key, currentValues);
+  }
+  for (const frame of frames) {
+    const row = document.createElement("div");
+    row.className = "frame-row";
+    const callLine = sourceLocation(frame.callLoc)?.line;
+    row.innerHTML = `
+      <span class="frame-depth">${escapeHtml(frame.depth ?? "")}</span>
+      <span class="frame-copy"><strong>${escapeHtml(frame.name ?? "Procedure")}</strong><small>${callLine ? `Called from line ${callLine}` : "Active procedure"}</small></span>
+    `;
+    elements.framesOutput.append(row);
+  }
+
+  const activeFrame = frames.at(-1);
+  elements.frameContext.textContent = activeFrame
+    ? `Inside ${activeFrame.name} · depth ${activeFrame.depth}`
+    : "Global scope";
+  const steps = Number(snapshot?.steps ?? 0);
+  elements.stateStepCount.textContent = `${steps.toLocaleString()} ${steps === 1 ? "operation" : "operations"}`;
+  elements.variablesGroup.hidden = variables.length === 0;
+  elements.listsGroup.hidden = lists.length === 0;
+  elements.framesGroup.hidden = frames.length === 0;
+  elements.stateEmpty.hidden = variables.length + lists.length + frames.length > 0;
+  state.inspectorValues = currentValues;
+}
+
 function clearResults() {
   state.currentOutput = "";
   state.currentResult = null;
+  state.inspectorValues = new Map();
   elements.consoleOutput.replaceChildren();
   elements.consoleEmpty.hidden = false;
   elements.copyOutputButton.disabled = true;
+  renderStateInspector();
+  clearExecutionLocation();
   setRunBanner("idle", "Ready to run.", 0);
   setSummary({ status: "Idle", steps: 0, inputs: 0, output: 0, time: "—" });
   setAppStatus("Ready", "ready");
@@ -5371,25 +6127,35 @@ function setAppStatus(message, kind = "ready") {
   elements.readyDot.style.background = color;
 }
 
-function setRunning(running) {
-  state.running = running;
-  elements.runButton.disabled = running;
-  elements.stopButton.disabled = !running;
-  elements.resetButton.disabled = running;
-  for (const button of $$("button", elements.examplesList)) button.disabled = running;
-  if (running) {
-    setRunBanner("running", "Running program…", 0);
-    setAppStatus("Running", "running");
-    elements.summaryStatus.textContent = "Running";
-  }
+function setExecutionControls(phase) {
+  state.executionPhase = phase;
+  const hasExecution = Boolean(state.execution);
+  const continuing = phase === "continuing";
+  const waiting = phase === "waiting";
+  const stepping = phase === "stepping";
+  const locked = hasExecution;
+  state.running = continuing || waiting;
+
+  elements.runButtonLabel.textContent = hasExecution ? "Continue" : "Run";
+  elements.runButton.setAttribute("aria-label", hasExecution ? "Continue program" : "Run program");
+  elements.runButton.disabled = continuing || waiting || stepping;
+  elements.stepButton.hidden = continuing;
+  elements.stepButton.disabled = waiting || stepping;
+  elements.stopButton.hidden = !continuing;
+  elements.stopButton.disabled = !continuing;
+  elements.resetButtonLabel.textContent = hasExecution ? "Reset run" : "Reset";
+  elements.resetButton.title = hasExecution ? "Reset execution and keep the current code" : "Restore the selected example";
+  elements.resetButton.disabled = continuing || waiting || stepping;
+  elements.codeEditor.readOnly = locked;
+  elements.inputQueue.readOnly = locked;
+  elements.clearInputButton.disabled = locked;
+  elements.resetRobotButton.disabled = locked;
+  elements.editorShell.classList.toggle("is-debugging", locked);
+  for (const button of $$("button", elements.examplesList)) button.disabled = locked;
 }
 
 function errorLocation(error) {
-  const loc = error?.primaryLoc ?? error?.loc ?? error?.location;
-  const start = loc?.start ?? loc;
-  const line = Number(start?.line ?? error?.line ?? 0);
-  const column = Number(start?.column ?? error?.column ?? 1);
-  return line > 0 ? { line, column: Math.max(1, column || 1) } : null;
+  return sourceLocation(error);
 }
 
 function selectSourceLocation(location) {
@@ -5406,16 +6172,18 @@ function selectSourceLocation(location) {
   updateCursorPosition();
 }
 
-function renderResult(result, elapsedMs) {
-  elements.consoleOutput.replaceChildren();
-  state.currentResult = result;
-  const wasAborted = result?.error?.code === "ABORTED";
-  const rawEntries = Array.isArray(result?.outputEntries) ? result.outputEntries : [];
-  const entries = rawEntries.map((entry) => {
+function normalizeOutputEntries(record) {
+  const rawEntries = Array.isArray(record?.outputEntries) ? record.outputEntries : [];
+  return rawEntries.map((entry) => {
     if (typeof entry === "string") return entry;
     return entry?.text ?? entry?.value ?? entry?.output ?? String(entry ?? "");
   });
-  state.currentOutput = typeof result?.output === "string" ? result.output : entries.join("");
+}
+
+function renderConsole(record, { includeError = false } = {}) {
+  elements.consoleOutput.replaceChildren();
+  const entries = normalizeOutputEntries(record);
+  state.currentOutput = typeof record?.output === "string" ? record.output : entries.join("");
 
   for (const entry of entries) {
     const item = document.createElement("li");
@@ -5423,8 +6191,9 @@ function renderResult(result, elapsedMs) {
     elements.consoleOutput.append(item);
   }
 
-  if (!result?.ok && !wasAborted) {
-    const error = result?.error ?? { message: "The program stopped with an unknown error." };
+  const wasAborted = record?.error?.code === "ABORTED";
+  if (includeError && !record?.ok && !wasAborted) {
+    const error = record?.error ?? { message: "The program stopped with an unknown error." };
     const location = errorLocation(error);
     const item = document.createElement("li");
     item.className = "output-error";
@@ -5444,8 +6213,19 @@ function renderResult(result, elapsedMs) {
 
   elements.consoleEmpty.hidden = elements.consoleOutput.children.length > 0;
   elements.copyOutputButton.disabled = !state.currentOutput;
+  return entries;
+}
+
+function elapsedLabel(elapsedMs) {
+  return `${Math.max(0.1, elapsedMs).toFixed(elapsedMs >= 100 ? 0 : 1)} ms`;
+}
+
+function renderResult(result, elapsedMs) {
+  state.currentResult = result;
+  const wasAborted = result?.error?.code === "ABORTED";
+  const entries = renderConsole(result, { includeError: true });
   const steps = result?.steps ?? 0;
-  const elapsed = `${Math.max(0.1, elapsedMs).toFixed(elapsedMs >= 100 ? 0 : 1)} ms`;
+  const elapsed = elapsedLabel(elapsedMs);
 
   if (result?.ok) {
     setRunBanner("success", "Program completed successfully.", steps);
@@ -5467,6 +6247,8 @@ function renderResult(result, elapsedMs) {
     time: elapsed,
   });
 
+  renderStateInspector(result?.state ?? result);
+
   if (result?.robot || result?.robotTrace) {
     state.robotSnapshot = result.robot ?? state.robotSnapshot;
     state.robotTrace = result.robotTrace ?? [];
@@ -5474,58 +6256,198 @@ function renderResult(result, elapsedMs) {
   }
 }
 
-async function executeProgram() {
-  if (state.running) return;
-  setRunning(true);
-  elements.consoleOutput.replaceChildren();
-  elements.consoleEmpty.hidden = true;
-  const started = performance.now();
+function beginExecution() {
+  if (state.execution) return state.execution;
+  clearResults();
   state.abortController = new AbortController();
+  state.executionStartedAt = performance.now();
+  state.executionSource = elements.codeEditor.value;
+  state.inspectorValues = new Map();
   const example = getExample(state.selectedExampleId);
   state.robotConfig = example?.robot ?? DEFAULT_ROBOT;
   resetRobotView();
+  state.execution = createExecution(state.executionSource, {
+    inputQueue: getInputValues(),
+    robot: state.robotConfig,
+    stepLimit: 100_000,
+  });
+  setExecutionControls("paused");
+  return state.execution;
+}
+
+function renderExecutionProgress(progress, { announce = false, scroll = true } = {}) {
+  if (!progress) return;
+  const snapshot = progress.state ?? state.execution?.snapshot?.() ?? {};
+  const entries = renderConsole(snapshot);
+  renderStateInspector(snapshot);
+  state.currentResult = {
+    status: progress.status,
+    state: snapshot,
+    checkpoint: progress.checkpoint,
+  };
+
+  if (snapshot.robot || snapshot.robotTrace) {
+    state.robotSnapshot = snapshot.robot ?? state.robotSnapshot;
+    state.robotTrace = snapshot.robotTrace ?? [];
+    renderRobot(state.robotConfig, state.robotSnapshot, state.robotTrace);
+  }
+
+  setExecutionLocation(progress.checkpoint, { announce, scroll });
+  const location = sourceLocation(progress.checkpoint);
+  const steps = snapshot.steps ?? 0;
+  const elapsed = elapsedLabel(performance.now() - state.executionStartedAt);
+  if (progress.status === "input-required") {
+    setRunBanner("running", location ? `Waiting for input at line ${location.line}…` : "Waiting for input…", steps);
+    setAppStatus("Waiting for input", "running");
+  } else if (state.executionPhase === "continuing") {
+    setRunBanner("running", "Running program…", steps);
+    setAppStatus("Running", "running");
+  } else {
+    setRunBanner("paused", location ? `Paused before line ${location.line}.` : "Execution paused.", steps);
+    setAppStatus(location ? `Paused · line ${location.line}` : "Paused", "running");
+  }
+  setSummary({
+    status: progress.status === "input-required" ? "Waiting for input" : state.executionPhase === "continuing" ? "Running" : "Paused",
+    steps,
+    inputs: snapshot.inputConsumed ?? 0,
+    output: entries.length,
+    time: elapsed,
+  });
+}
+
+function finishExecution(progress) {
+  const execution = state.execution;
+  if (!execution) return;
+  const result = progress?.result ?? execution.getResult();
+  const checkpoint = progress?.checkpoint ?? result?.debug?.checkpoint ?? state.executionCheckpoint;
+  if (checkpoint) setExecutionLocation(checkpoint, { announce: true, scroll: true });
+  renderResult(result, performance.now() - state.executionStartedAt);
+  state.execution = null;
+  state.abortController = null;
+  state.executionSource = "";
+  setExecutionControls("idle");
+}
+
+async function resumeAfterInput(progress, resumePhase) {
+  let current = progress;
+  while (current?.status === "input-required" && state.execution) {
+    setExecutionControls("waiting");
+    renderExecutionProgress(current, { announce: true, scroll: true });
+    let submission;
+    try {
+      submission = await requestRuntimeInput(current.inputRequest ?? current.checkpoint);
+    } catch (error) {
+      state.execution?.abort();
+      return state.execution?.advanceToNextStatement() ?? null;
+    }
+    if (!state.execution) return null;
+    try {
+      state.execution.provideInput(submission.value);
+    } catch (error) {
+      showToast(error?.message ?? "That input value is not supported.");
+      continue;
+    }
+    elements.inputQueue.value += `${elements.inputQueue.value ? "\n" : ""}${submission.raw}`;
+    persistState();
+    setExecutionControls(resumePhase);
+    current = state.execution.advanceToNextStatement();
+  }
+  return current;
+}
+
+async function stepProgram() {
+  if (["continuing", "waiting", "stepping"].includes(state.executionPhase)) return;
+  const execution = beginExecution();
+  setExecutionControls("stepping");
+  let progress = execution.advanceToNextStatement();
+  progress = await resumeAfterInput(progress, "paused");
+  if (!progress || state.execution !== execution) return;
+  if (progress.done) {
+    finishExecution(progress);
+    return;
+  }
+  setExecutionControls("paused");
+  renderExecutionProgress(progress, { announce: true, scroll: true });
+}
+
+async function executeProgram() {
+  if (["continuing", "waiting", "stepping"].includes(state.executionPhase)) return;
+  const execution = beginExecution();
+  const controller = state.abortController;
+  setExecutionControls("continuing");
+  setRunBanner("running", "Running program…", execution.snapshot().steps ?? 0);
+  setAppStatus("Running", "running");
+  elements.summaryStatus.textContent = "Running";
+  let progress = null;
 
   try {
-    const result = await runProgramAsync(elements.codeEditor.value, {
-      input: getInputValues(),
-      inputs: getInputValues(),
-      inputQueue: getInputValues(),
-      inputProvider: requestRuntimeInput,
-      robot: state.robotConfig,
-      robotConfig: state.robotConfig,
-      maxSteps: 100_000,
-      stepLimit: 100_000,
-      chunkSize: 500,
-      signal: state.abortController.signal,
-    });
-    renderResult(result, performance.now() - started);
-  } catch (error) {
-    if (error?.name === "AbortError" || state.abortController.signal.aborted) {
-      const stoppedResult = {
-        ok: false,
-        output: state.currentOutput,
-        outputEntries: [],
-        steps: 0,
-        error: { message: "Execution stopped by the user." },
-      };
-      renderResult(stoppedResult, performance.now() - started);
-      setRunBanner("idle", "Execution stopped.", 0);
-      setAppStatus("Ready", "ready");
-      elements.summaryStatus.textContent = "Stopped";
-    } else {
-      renderResult({ ok: false, output: "", outputEntries: [], steps: 0, error }, performance.now() - started);
+    while (state.execution === execution && !execution.done) {
+      const sliceStarted = performance.now();
+      let boundaries = 0;
+      do {
+        if (controller?.signal.aborted && !execution.done) execution.abort();
+        progress = execution.advanceToNextStatement();
+        if (progress.status === "input-required") {
+          progress = await resumeAfterInput(progress, "continuing");
+          if (!progress || state.execution !== execution) return;
+        }
+        boundaries += 1;
+      } while (!progress.done && boundaries < 250 && performance.now() - sliceStarted < 8);
+
+      renderExecutionProgress(progress, { announce: false, scroll: false });
+      if (progress.done) break;
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
-  } finally {
-    setRunning(false);
+    if (state.execution === execution) {
+      if (!progress?.done && execution.done) {
+        progress = execution.advanceToNextStatement();
+      } else {
+        progress ??= execution.advanceToNextStatement();
+      }
+      finishExecution(progress);
+    }
+  } catch (error) {
+    const snapshot = execution.snapshot?.() ?? {};
+    renderResult({
+      ok: false,
+      output: snapshot.output ?? "",
+      outputEntries: snapshot.outputEntries ?? [],
+      globals: snapshot.globals ?? {},
+      frames: snapshot.frames ?? [],
+      state: snapshot,
+      robot: snapshot.robot ?? null,
+      robotTrace: snapshot.robotTrace ?? [],
+      steps: snapshot.steps ?? 0,
+      inputConsumed: snapshot.inputConsumed ?? 0,
+      error,
+    }, performance.now() - state.executionStartedAt);
+    state.execution = null;
     state.abortController = null;
+    setExecutionControls("idle");
   }
 }
 
 function stopProgram() {
-  if (!state.running || !state.abortController) return;
-  state.abortController.abort();
+  if (!state.execution || !state.running) return;
+  state.abortController?.abort();
+  state.execution.abort();
   if (elements.inputDialog.open) elements.inputDialog.close("cancel");
   setAppStatus("Stopping…", "running");
+}
+
+function resetExecution() {
+  if (!state.execution) return false;
+  state.abortController?.abort();
+  state.execution.abort();
+  if (elements.inputDialog.open) elements.inputDialog.close("cancel");
+  state.execution = null;
+  state.abortController = null;
+  state.executionSource = "";
+  setExecutionControls("idle");
+  resetRobotView();
+  clearResults();
+  showToast("Execution reset. Your code was kept.");
+  return true;
 }
 
 function requestRuntimeInput(context = {}) {
@@ -5539,6 +6461,7 @@ function requestRuntimeInput(context = {}) {
       ? `The program requested its next value at line ${location.line}.`
       : "The program requested its next value.";
     elements.runtimeInput.value = "";
+    elements.inputDialog.returnValue = "";
     elements.inputDialog.showModal();
     requestAnimationFrame(() => elements.runtimeInput.focus());
 
@@ -5546,8 +6469,7 @@ function requestRuntimeInput(context = {}) {
       elements.inputDialog.removeEventListener("close", onClose);
       if (elements.inputDialog.returnValue === "submit") {
         const raw = elements.runtimeInput.value;
-        elements.inputQueue.value += `${elements.inputQueue.value ? "\n" : ""}${raw}`;
-        resolve(parseInputValue(raw));
+        resolve({ raw, value: parseInputValue(raw) });
       } else {
         reject(new DOMException("INPUT() cancelled", "AbortError"));
       }
@@ -5556,12 +6478,20 @@ function requestRuntimeInput(context = {}) {
   });
 }
 
-function switchResultTab(tabName) {
-  const showRobot = tabName === "robot";
-  elements.consoleTab.setAttribute("aria-selected", String(!showRobot));
-  elements.robotTab.setAttribute("aria-selected", String(showRobot));
-  elements.consolePanel.hidden = showRobot;
-  elements.robotPanel.hidden = !showRobot;
+function switchResultTab(tabName, { focus = false } = {}) {
+  const views = {
+    console: [elements.consoleTab, elements.consolePanel],
+    state: [elements.stateTab, elements.statePanel],
+    robot: [elements.robotTab, elements.robotPanel],
+  };
+  if (!views[tabName]) tabName = "console";
+  for (const [name, [tab, panel]] of Object.entries(views)) {
+    const selected = name === tabName;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    panel.hidden = !selected;
+  }
+  if (focus) views[tabName][0].focus();
 }
 
 function resetRobotView() {
@@ -5813,6 +6743,7 @@ function showToast(message) {
 function bindEvents() {
   elements.codeEditor.addEventListener("input", () => {
     updateEditorChrome();
+    clearExecutionLocation();
     state.drafts.set(state.selectedExampleId, elements.codeEditor.value);
     persistState();
   });
@@ -5821,7 +6752,7 @@ function bindEvents() {
   elements.codeEditor.addEventListener("keyup", updateCursorPosition);
   elements.codeEditor.addEventListener("select", updateCursorPosition);
   elements.codeEditor.addEventListener("keydown", (event) => {
-    if (event.key === "Tab") {
+    if (event.key === "Tab" && !elements.codeEditor.readOnly) {
       event.preventDefault();
       const { selectionStart, selectionEnd, value } = elements.codeEditor;
       elements.codeEditor.value = `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`;
@@ -5831,8 +6762,10 @@ function bindEvents() {
   });
 
   elements.runButton.addEventListener("click", executeProgram);
+  elements.stepButton.addEventListener("click", stepProgram);
   elements.stopButton.addEventListener("click", stopProgram);
   elements.resetButton.addEventListener("click", () => {
+    if (resetExecution()) return;
     const example = getExample(state.selectedExampleId);
     state.drafts.delete(state.selectedExampleId);
     elements.codeEditor.value = example?.code ?? "";
@@ -5853,7 +6786,22 @@ function bindEvents() {
   elements.copyOutputButton.addEventListener("click", () => copyText(state.currentOutput, "Console output copied."));
 
   elements.consoleTab.addEventListener("click", () => switchResultTab("console"));
+  elements.stateTab.addEventListener("click", () => switchResultTab("state"));
   elements.robotTab.addEventListener("click", () => switchResultTab("robot"));
+  $(".results-tabs").addEventListener("keydown", (event) => {
+    const names = ["console", "state", "robot"];
+    const tabs = [elements.consoleTab, elements.stateTab, elements.robotTab];
+    const index = tabs.indexOf(event.target);
+    if (index < 0) return;
+    let nextIndex = null;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = tabs.length - 1;
+    if (nextIndex == null) return;
+    event.preventDefault();
+    switchResultTab(names[nextIndex], { focus: true });
+  });
   elements.resetRobotButton.addEventListener("click", resetRobotView);
 
   elements.referenceButton.addEventListener("click", openReference);
@@ -5875,10 +6823,15 @@ function bindEvents() {
     else openExamplesRail();
   });
   elements.examplesClose.addEventListener("click", closeExamplesRail);
+  window.addEventListener("resize", positionExecutionLine);
 
   document.addEventListener("keydown", (event) => {
     const modifier = event.metaKey || event.ctrlKey;
-    if (modifier && event.key === "Enter") {
+    const dialogOpen = elements.inputDialog.open || elements.aboutDialog.open;
+    if (event.key === "F10" && !dialogOpen && !elements.referenceDrawer.classList.contains("is-open")) {
+      event.preventDefault();
+      stepProgram();
+    } else if (modifier && event.key === "Enter" && !dialogOpen) {
       event.preventDefault();
       executeProgram();
     } else if (event.key === "Escape") {
@@ -5902,6 +6855,7 @@ function initialize() {
   updateEditorChrome();
   resetRobotView();
   clearResults();
+  setExecutionControls("idle");
   switchResultTab(selected.robot ? "robot" : "console");
   requestAnimationFrame(() => {
     elements.codeEditor.focus({ preventScroll: true });

@@ -4,7 +4,8 @@ Checked August 31, 2026 against the current College Board AP Computer Science Pr
 
 ## Automated verification
 
-- Interpreter suite: 26 tests passed, 0 failed.
+- Interpreter suite: 34 tests passed, 0 failed.
+- Statement debugger coverage includes straight-line effects, nested branches, loop-iteration boundaries, procedure step-in and locals, paused `INPUT()`, runtime-error state, immutable snapshots, and full-run parity.
 - Shipped examples: all six matched their exact expected output; the robot example also matched row 3, column 3, facing north.
 - Source syntax: `src/interpreter.js` and `src/app.js` pass Node syntax checks.
 - Standalone build: `index.html` is self-contained, has no runtime-relative JavaScript or CSS resources, and its exact inline app script parses successfully.
@@ -15,13 +16,18 @@ Checked August 31, 2026 against the current College Board AP Computer Science Pr
 The final standalone `index.html` was tested in the in-app browser at 1536×1024 and 390×844.
 
 - Default example completed with 139 steps and 11 displayed values; its empty state was fully hidden.
+- **Step** and `F10` paused before the first executable statement, advanced through nested loop and procedure bodies, and highlighted the next source row without stealing editor focus.
+- The live State view showed prior-statement effects, changed scalar values, 1-based list entries, and active procedure locals/call frames; Robot motion updated only after its source statement executed.
+- **Continue** finished the same paused execution, **Reset run** preserved source text, and the editor/input queue remained copyable but read-only while debugging.
 - Queued `INPUT()` selected the expected conditional branch, and an empty queue opened the live input dialog.
+- A paused `INPUT()` resumed exactly once after a supplied value and reported one consumed input.
 - Robot example finished at row 3, column 3, facing north.
 - An invalid 1-based list access produced a structured error; clicking it selected the exact failing source line.
 - Stop halted an intentionally infinite loop while the runner remained responsive.
 - Searching the reference for `RANDOM` returned only `RANDOM(a, b)`.
 - About displayed the current five big-idea weightings, 2026–27 assessment facts, 2027 Create deadline, and 2027 exam date.
 - Mobile layout had no horizontal overflow; editor, output, summary, reference, and examples navigation remained usable.
+- At both desktop and mobile breakpoints, Run/Step/Reset and Continue/Step/Reset run fit without overflow; Console/State/Robot tabs also supported arrow-key navigation.
 
 ## Fidelity ledger
 
