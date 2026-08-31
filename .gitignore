@@ -1,0 +1,15 @@
+.DS_Store
+._*
+
+node_modules/
+coverage/
+.nyc_output/
+
+.env
+.env.*
+!.env.example
+
+*.log
+*.zip
+tmp/
+.tmp/

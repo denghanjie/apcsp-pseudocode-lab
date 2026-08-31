@@ -1,0 +1,5917 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A browser-based runner for the AP Computer Science Principles Exam Reference Sheet notation."
+    />
+    <title>Pseudocode Lab — AP CSP practice runner</title>
+    <style>
+:root {
+  color-scheme: light;
+  --font-ui: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-code: "SFMono-Regular", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+  --ink-950: #07152f;
+  --ink-900: #0b1e3f;
+  --ink-800: #17345d;
+  --ink-700: #2d4a72;
+  --ink-600: #4f6787;
+  --ink-500: #72839c;
+  --navy: #052f57;
+  --navy-deep: #042747;
+  --blue: #075ee8;
+  --blue-strong: #004fd0;
+  --blue-soft: #eaf2ff;
+  --surface: #ffffff;
+  --surface-soft: #f7f9fc;
+  --surface-muted: #eef2f7;
+  --line: #d5ddea;
+  --line-strong: #bac6d8;
+  --success: #17773c;
+  --success-soft: #eaf7ee;
+  --warning: #a35b00;
+  --warning-soft: #fff4df;
+  --danger: #b42318;
+  --danger-soft: #fff0ef;
+  --code-comment: #237238;
+  --code-keyword: #074fe1;
+  --code-string: #bf281d;
+  --code-number: #7252c7;
+  --code-operator: #0a203f;
+  --shadow-drawer: -18px 0 48px rgb(12 31 65 / 16%);
+  --header-height: 82px;
+  --status-height: 54px;
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+  --focus: 0 0 0 3px rgb(7 94 232 / 28%);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ink-950: #f5f7ff;
+  --ink-900: #ecf1ff;
+  --ink-800: #dbe4f7;
+  --ink-700: #bcc9e0;
+  --ink-600: #9daec8;
+  --ink-500: #7f91ad;
+  --navy: #061d38;
+  --navy-deep: #04162b;
+  --blue: #67a0ff;
+  --blue-strong: #83b1ff;
+  --blue-soft: #142b50;
+  --surface: #0e1728;
+  --surface-soft: #121e32;
+  --surface-muted: #1a2941;
+  --line: #2d3c55;
+  --line-strong: #465873;
+  --success: #67d391;
+  --success-soft: #123524;
+  --warning: #ffc56d;
+  --warning-soft: #3d2b10;
+  --danger: #ff8f86;
+  --danger-soft: #3d1d20;
+  --code-comment: #75c789;
+  --code-keyword: #80adff;
+  --code-string: #ff8e84;
+  --code-number: #c6a4ff;
+  --code-operator: #e7edfa;
+  --shadow-drawer: -18px 0 54px rgb(0 0 0 / 42%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink-900);
+  background: var(--surface-soft);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+button {
+  color: inherit;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 10px;
+  left: 10px;
+  padding: 10px 14px;
+  transform: translateY(-160%);
+  border-radius: var(--radius-sm);
+  color: white;
+  background: var(--blue);
+  font-weight: 700;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: var(--header-height) minmax(0, 1fr) var(--status-height);
+  height: 100dvh;
+  min-height: 620px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 8px;
+  color: white;
+  background: var(--blue);
+  box-shadow: 0 5px 15px rgb(7 94 232 / 20%);
+  font-family: Georgia, serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 3px;
+}
+
+.brand-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.brand-copy strong {
+  font-size: clamp(21px, 2vw, 29px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.brand-copy small {
+  color: var(--ink-600);
+  font-size: 14px;
+  letter-spacing: 0.015em;
+}
+
+.header-actions,
+.run-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.button,
+.icon-button,
+.theme-button,
+.syntax-help,
+.examples-list button,
+.results-tabs button,
+.reference-categories button {
+  border: 0;
+  cursor: pointer;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  gap: 9px;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 680;
+  line-height: 1;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.button svg,
+.icon-button svg,
+.theme-button svg,
+.syntax-help svg,
+.file-title svg,
+.rail-tip svg,
+.reference-search-wrap svg,
+.drawer-footer svg {
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.button .icon-fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+.button-primary {
+  min-width: 104px;
+  color: white;
+  background: var(--blue);
+  box-shadow: 0 5px 14px rgb(7 94 232 / 18%);
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--blue-strong);
+  transform: translateY(-1px);
+}
+
+.button-primary kbd {
+  display: none;
+  color: rgb(255 255 255 / 72%);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.button-quiet {
+  border-color: var(--line);
+  color: var(--ink-800);
+  background: var(--surface);
+}
+
+.button-quiet:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--surface-soft);
+}
+
+#reference-button[aria-expanded="true"] {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--surface);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+.button-compact {
+  min-height: 34px;
+  padding: 0 11px;
+  font-size: 12px;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-700);
+  background: transparent;
+}
+
+.icon-button:hover {
+  background: var(--surface-muted);
+}
+
+.mobile-examples-button,
+.rail-close {
+  display: none;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 285px minmax(480px, 1fr) minmax(390px, 480px);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.examples-rail {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  color: white;
+  background: var(--navy);
+  border-right: 1px solid rgb(255 255 255 / 8%);
+}
+
+.rail-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70px;
+  padding: 0 20px;
+}
+
+.rail-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.examples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 0 10px 18px;
+  overflow: auto;
+}
+
+.examples-list button {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  min-height: 65px;
+  gap: 12px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  color: rgb(255 255 255 / 90%);
+  background: transparent;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 660;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.examples-list button:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.examples-list button[aria-current="true"] {
+  color: white;
+  background: var(--blue);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%), 0 8px 20px rgb(0 17 48 / 24%);
+}
+
+.example-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+}
+
+.example-icon svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.example-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 15px 20px;
+  border-top: 1px solid rgb(255 255 255 / 16%);
+  color: rgb(255 255 255 / 85%);
+}
+
+.rail-tip svg {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.rail-tip p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.editor-pane,
+.results-pane {
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+}
+
+.editor-pane {
+  display: grid;
+  grid-template-rows: 82px minmax(0, 1fr) 36px;
+  border-right: 1px solid var(--line);
+}
+
+.pane-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.file-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 11px;
+  color: var(--ink-900);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.file-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-title svg {
+  color: var(--ink-600);
+}
+
+.editor-shell {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.line-numbers,
+.code-highlight,
+#code-editor {
+  margin: 0;
+  font-family: var(--font-code);
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-variant-ligatures: none;
+  line-height: 1.85;
+  tab-size: 2;
+}
+
+.line-numbers {
+  min-height: 100%;
+  padding: 10px 16px 18px 0;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  color: var(--ink-500);
+  background: var(--surface-soft);
+  text-align: right;
+  user-select: none;
+}
+
+.code-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.code-highlight,
+#code-editor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 10px 20px 26px;
+  border: 0;
+  white-space: pre;
+  overflow: auto;
+}
+
+.code-highlight {
+  z-index: 1;
+  pointer-events: none;
+  color: var(--ink-900);
+  background: var(--surface);
+}
+
+#code-editor {
+  z-index: 2;
+  resize: none;
+  color: transparent;
+  caret-color: var(--ink-900);
+  background: transparent;
+  -webkit-text-fill-color: transparent;
+  outline: none;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+#code-editor::selection {
+  background: rgb(7 94 232 / 20%);
+}
+
+.tok-comment { color: var(--code-comment); }
+.tok-keyword { color: var(--code-keyword); font-weight: 700; }
+.tok-string { color: var(--code-string); }
+.tok-number { color: var(--code-number); }
+.tok-operator { color: var(--code-operator); font-weight: 650; }
+.tok-builtin { color: var(--code-keyword); font-weight: 650; }
+
+.editor-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-600);
+  background: var(--surface-soft);
+  font-size: 12px;
+}
+
+.results-pane {
+  display: grid;
+  grid-template-rows: 62px 57px minmax(200px, 1fr) auto auto;
+  overflow: hidden;
+}
+
+.syntax-help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-600);
+  background: var(--surface-soft);
+  text-align: left;
+  font-size: 13px;
+}
+
+.syntax-help:hover {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.results-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 7px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.results-tabs button {
+  position: relative;
+  min-width: 88px;
+  padding: 0 8px;
+  color: var(--ink-700);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 710;
+}
+
+.results-tabs button::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: -1px;
+  left: 8px;
+  height: 3px;
+  transform: scaleX(0);
+  border-radius: 3px 3px 0 0;
+  background: var(--blue);
+  transition: transform 150ms ease;
+}
+
+.results-tabs button[aria-selected="true"] {
+  color: var(--blue);
+}
+
+.results-tabs button[aria-selected="true"]::after {
+  transform: scaleX(1);
+}
+
+.result-view {
+  min-height: 0;
+  overflow: auto;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.console-panel {
+  position: relative;
+  padding: 14px;
+}
+
+.run-banner {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 43px;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-700);
+  background: var(--surface-soft);
+  font-size: 12px;
+}
+
+.run-banner strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banner-icon,
+.banner-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.banner-icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.run-banner.banner-success {
+  border-color: color-mix(in srgb, var(--success) 26%, transparent);
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.run-banner.banner-error {
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.run-banner.banner-running {
+  border-color: color-mix(in srgb, var(--blue) 26%, transparent);
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.banner-running .banner-icon {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.console-output {
+  display: grid;
+  gap: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  counter-reset: output-line;
+  list-style: none;
+  color: var(--ink-900);
+  font-family: var(--font-code);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.console-output li {
+  display: grid;
+  grid-template-columns: 27px minmax(0, 1fr);
+  gap: 9px;
+  min-height: 28px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.console-output li::before {
+  counter-increment: output-line;
+  content: counter(output-line);
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.console-output li.output-error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  cursor: pointer;
+}
+
+.console-output li.output-error::before {
+  content: "!";
+  color: var(--danger);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.console-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: min(250px, 80%);
+  transform: translate(-50%, -28%);
+  color: var(--ink-500);
+  text-align: center;
+}
+
+.console-empty svg {
+  width: 42px;
+  height: 42px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.console-empty p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.robot-panel {
+  padding: 14px;
+}
+
+.robot-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.robot-heading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.robot-heading strong {
+  font-size: 14px;
+}
+
+.robot-heading small {
+  color: var(--ink-600);
+  font-size: 11px;
+}
+
+.robot-grid-wrap {
+  display: grid;
+  place-items: center;
+  min-height: 250px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background-color: var(--surface-soft);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--line-strong) 65%, transparent) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+.robot-grid {
+  --robot-columns: 5;
+  display: grid;
+  grid-template-columns: repeat(var(--robot-columns), 1fr);
+  width: min(310px, 100%);
+  aspect-ratio: var(--robot-columns) / var(--robot-rows, 5);
+  border: 2px solid var(--ink-700);
+  background: var(--surface);
+}
+
+.robot-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.robot-cell.is-start {
+  background: var(--blue-soft);
+}
+
+.robot-cell.is-blocked {
+  background: repeating-linear-gradient(135deg, var(--ink-600) 0 3px, var(--ink-700) 3px 6px);
+}
+
+.robot-cell.is-path:not(.is-start) {
+  background: color-mix(in srgb, var(--blue-soft) 68%, var(--surface));
+}
+
+.robot-cell.is-path::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--blue) 48%, transparent);
+}
+
+.robot-token {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 72%;
+  height: 72%;
+  transform: rotate(var(--robot-angle, 0deg));
+  border: 2px solid white;
+  border-radius: 8px;
+  color: white;
+  background: var(--blue);
+  box-shadow: 0 3px 10px rgb(7 94 232 / 28%);
+  transition: transform 180ms ease;
+}
+
+.robot-token svg {
+  width: 70%;
+  height: 70%;
+  fill: currentColor;
+}
+
+.robot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  color: var(--ink-600);
+  font-size: 11px;
+}
+
+.robot-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-cell {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.legend-start { background: var(--blue-soft); }
+.legend-path { background: color-mix(in srgb, var(--blue-soft) 68%, var(--surface)); }
+.legend-blocked { background: var(--ink-700); }
+
+.input-queue-section,
+.execution-summary {
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.section-label-row,
+.summary-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.section-label-row label,
+.execution-summary h2 {
+  margin: 0;
+  color: var(--ink-900);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.tooltip-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--ink-600);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: help;
+}
+
+.tooltip-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: calc(100% + 9px);
+  width: 250px;
+  padding: 9px 10px;
+  transform: translateY(5px);
+  border-radius: var(--radius-sm);
+  color: white;
+  background: var(--ink-900);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.tooltip-button:hover::after,
+.tooltip-button:focus-visible::after {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 9px;
+  margin-top: 8px;
+}
+
+#input-queue {
+  min-height: 44px;
+  max-height: 82px;
+  resize: vertical;
+  padding: 9px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink-900);
+  background: var(--surface);
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+#input-queue::placeholder,
+.reference-search-wrap input::placeholder {
+  color: var(--ink-500);
+}
+
+.execution-summary {
+  overflow: auto;
+  border-bottom: 0;
+}
+
+.execution-summary dl {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+}
+
+.execution-summary dl > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--ink-600);
+  font-size: 12px;
+}
+
+.execution-summary dt,
+.execution-summary dd {
+  margin: 0;
+}
+
+.execution-summary dd {
+  color: var(--blue);
+  font-family: var(--font-code);
+  text-align: right;
+}
+
+.status-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  border-top: 1px solid var(--line-strong);
+  color: var(--ink-600);
+  background: var(--surface-soft);
+  font-size: 12px;
+}
+
+.ready-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  justify-self: start;
+}
+
+.ready-indicator span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #39b85a;
+  box-shadow: 0 0 0 3px rgb(57 184 90 / 10%);
+}
+
+.ready-indicator strong {
+  color: var(--ink-700);
+  font-weight: 680;
+}
+
+.syntax-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.syntax-status i {
+  color: var(--line-strong);
+  font-style: normal;
+}
+
+.theme-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  gap: 8px;
+  justify-self: end;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-700);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.drawer-scrim {
+  position: fixed;
+  z-index: 19;
+  inset: var(--header-height) 0 var(--status-height);
+  background: rgb(5 18 39 / 12%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.drawer-scrim.is-open {
+  opacity: 1;
+}
+
+.reference-drawer {
+  position: fixed;
+  z-index: 20;
+  top: var(--header-height);
+  right: 0;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  width: min(528px, 96vw);
+  height: calc(100dvh - var(--header-height) - var(--status-height));
+  transform: translateX(104%);
+  border-left: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-drawer);
+  transition: transform 200ms cubic-bezier(.2,.7,.2,1);
+}
+
+.reference-drawer.is-open {
+  transform: translateX(0);
+}
+
+.drawer-header,
+.dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 21px 20px 17px;
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-header h2,
+.dialog-header h2 {
+  margin: 0;
+  color: var(--ink-950);
+  font-size: 21px;
+  letter-spacing: -0.025em;
+}
+
+.drawer-header p,
+.dialog-header p {
+  margin: 5px 0 0;
+  color: var(--ink-600);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.reference-drawer .drawer-header {
+  padding-bottom: 5px;
+  border-bottom: 0;
+}
+
+.reference-search-wrap {
+  position: relative;
+  padding: 8px 20px 9px;
+}
+
+.reference-search-wrap svg {
+  position: absolute;
+  top: 50%;
+  left: 33px;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  color: var(--ink-600);
+}
+
+.reference-search-wrap input {
+  width: 100%;
+  height: 42px;
+  padding: 0 13px 0 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink-900);
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.reference-attribution {
+  margin: 0;
+  padding: 0 20px 13px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-600);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.reference-body {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reference-categories {
+  padding: 8px 0;
+  overflow: auto;
+  border-right: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.reference-categories button {
+  position: relative;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  color: var(--ink-700);
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.reference-categories button:hover {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.reference-categories button[aria-current="true"] {
+  color: var(--blue);
+  background: var(--surface);
+}
+
+.reference-categories button[aria-current="true"]::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--blue);
+}
+
+.reference-results {
+  min-height: 0;
+  overflow: auto;
+  background: var(--surface);
+}
+
+.reference-section-intro {
+  padding: 15px 16px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-600);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.reference-entry {
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.reference-entry-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.reference-entry code {
+  color: var(--ink-950);
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: pre-wrap;
+}
+
+.copy-snippet {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: var(--ink-600);
+  background: transparent;
+  cursor: pointer;
+}
+
+.copy-snippet:hover {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.copy-snippet svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.reference-entry p {
+  margin: 6px 0 0;
+  color: var(--ink-600);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.reference-note {
+  margin: 14px 16px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--blue) 24%, var(--line));
+  border-radius: var(--radius-sm);
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.reference-empty {
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+  padding: 30px;
+  color: var(--ink-500);
+  text-align: center;
+  font-size: 13px;
+}
+
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  min-height: 60px;
+  padding: 0 20px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.drawer-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 680;
+  text-decoration: none;
+}
+
+.drawer-footer svg {
+  width: 17px;
+  height: 17px;
+}
+
+dialog {
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  color: var(--ink-900);
+  background: var(--surface);
+  box-shadow: 0 28px 80px rgb(5 18 39 / 28%);
+}
+
+dialog::backdrop {
+  background: rgb(5 18 39 / 45%);
+  backdrop-filter: blur(2px);
+}
+
+.about-dialog {
+  width: min(860px, calc(100vw - 36px));
+  max-height: min(780px, calc(100dvh - 36px));
+  overflow: hidden;
+}
+
+.about-dialog[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.about-content {
+  min-height: 0;
+  padding: 22px;
+  overflow: auto;
+}
+
+.about-lede {
+  max-width: 720px;
+  margin: 0 0 20px;
+  color: var(--ink-700);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.about-callout {
+  margin: 0 0 24px;
+  padding: 15px 17px;
+  border-left: 4px solid var(--blue);
+  color: var(--ink-700);
+  background: var(--blue-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: 24px;
+}
+
+.about-section h3 {
+  margin: 0 0 10px;
+  color: var(--ink-950);
+  font-size: 15px;
+}
+
+.about-section p,
+.about-section li {
+  color: var(--ink-600);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.about-section ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.about-section li + li {
+  margin-top: 5px;
+}
+
+.weight-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.weight-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.weight-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.weight-copy strong {
+  color: var(--ink-800);
+  font-size: 12px;
+}
+
+.weight-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--surface-muted);
+}
+
+.weight-track i {
+  display: block;
+  height: 100%;
+  width: var(--weight);
+  border-radius: inherit;
+  background: var(--blue);
+}
+
+.weight-row span:last-child {
+  color: var(--blue);
+  font-family: var(--font-code);
+  font-size: 11px;
+}
+
+.source-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.source-list a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  width: fit-content;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 660;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.input-dialog {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.input-dialog form {
+  display: grid;
+  gap: 14px;
+  padding: 0 20px 20px;
+}
+
+.compact-dialog-header {
+  margin: 0 -20px;
+}
+
+.input-dialog label {
+  color: var(--ink-800);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.input-dialog input {
+  height: 44px;
+  padding: 0 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink-900);
+  background: var(--surface);
+  font-family: var(--font-code);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 50;
+  right: 18px;
+  bottom: 66px;
+  max-width: min(340px, calc(100vw - 36px));
+  padding: 10px 13px;
+  transform: translateY(12px);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink-900);
+  background: var(--surface);
+  box-shadow: 0 12px 36px rgb(5 18 39 / 20%);
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.toast.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@keyframes pulse {
+  50% { opacity: .45; }
+}
+
+@media (min-width: 1500px) {
+  :root {
+    --header-height: 90px;
+    --status-height: 66px;
+  }
+
+  .workspace {
+    grid-template-columns: 306px minmax(480px, 1fr) 510px;
+  }
+
+  .brand-mark {
+    width: 58px;
+    height: 58px;
+    flex-basis: 58px;
+  }
+
+  .app-header .button {
+    min-height: 50px;
+  }
+
+  .editor-pane {
+    grid-template-rows: 90px minmax(0, 1fr) 36px;
+  }
+
+  .pane-toolbar .button {
+    min-height: 46px;
+  }
+
+  .rail-heading {
+    min-height: 80px;
+  }
+
+  .examples-list button {
+    min-height: 72px;
+  }
+
+  .editor-shell {
+    grid-template-columns: 70px minmax(0, 1fr);
+  }
+
+  .line-numbers,
+  .code-highlight,
+  #code-editor {
+    font-size: 18px;
+  }
+
+  .results-pane {
+    grid-template-rows: 67px 57px minmax(200px, 1fr) auto auto;
+  }
+}
+
+@media (max-width: 1180px) {
+  .workspace {
+    grid-template-columns: 230px minmax(430px, 1fr) 370px;
+  }
+
+  .examples-list button {
+    grid-template-columns: 30px minmax(0, 1fr);
+    min-height: 58px;
+    padding: 0 11px;
+    font-size: 14px;
+  }
+
+  .example-icon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .pane-toolbar {
+    padding: 0 13px;
+  }
+
+  .button {
+    padding: 0 12px;
+  }
+
+  .run-actions {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 980px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .mobile-examples-button,
+  .rail-close {
+    display: inline-flex;
+  }
+
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 350px;
+    min-height: calc(100dvh - var(--header-height) - var(--status-height));
+    overflow: visible;
+  }
+
+  .examples-rail {
+    position: fixed;
+    z-index: 18;
+    top: var(--header-height);
+    bottom: var(--status-height);
+    left: 0;
+    width: min(310px, 88vw);
+    transform: translateX(-104%);
+    box-shadow: 18px 0 44px rgb(4 24 50 / 26%);
+    transition: transform 180ms ease;
+  }
+
+  .examples-rail.is-open {
+    transform: translateX(0);
+  }
+
+  .editor-pane {
+    min-height: calc(100dvh - var(--header-height) - var(--status-height));
+  }
+
+  .status-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+
+  .syntax-status span:first-child,
+  .syntax-status i:first-of-type {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --header-height: 70px;
+    --status-height: 48px;
+  }
+
+  .app-header {
+    padding: 0 12px;
+  }
+
+  .brand {
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    font-size: 24px;
+  }
+
+  .brand-copy strong {
+    font-size: 20px;
+  }
+
+  .brand-copy small {
+    font-size: 11px;
+  }
+
+  .header-actions .button span {
+    display: none;
+  }
+
+  .header-actions .button {
+    width: 42px;
+    padding: 0;
+  }
+
+  .workspace {
+    display: block;
+    min-height: 0;
+  }
+
+  .editor-pane {
+    grid-template-rows: auto 540px 36px;
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .editor-toolbar {
+    min-height: 122px;
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: center;
+    padding: 13px;
+  }
+
+  .file-title {
+    min-height: 34px;
+  }
+
+  .run-actions {
+    width: 100%;
+  }
+
+  .run-actions .button {
+    flex: 1 1 auto;
+  }
+
+  .results-pane {
+    grid-template-rows: 52px 52px minmax(360px, 52dvh) auto auto;
+    min-height: 720px;
+  }
+
+  .status-bar {
+    grid-template-columns: 1fr auto;
+    padding: 0 12px;
+  }
+
+  .syntax-status {
+    display: none;
+  }
+
+  .reference-drawer {
+    top: 0;
+    width: 100vw;
+    height: 100dvh;
+  }
+
+  .drawer-scrim {
+    inset: 0;
+  }
+
+  .reference-body {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-copy small {
+    display: none;
+  }
+
+  .header-actions {
+    gap: 4px;
+  }
+
+  .header-actions .button,
+  .mobile-examples-button {
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+  }
+
+  .line-numbers,
+  .code-highlight,
+  #code-editor {
+    font-size: 13px;
+    line-height: 1.75;
+  }
+
+  .editor-shell {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .code-highlight,
+  #code-editor {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .reference-body {
+    display: block;
+    overflow: auto;
+  }
+
+  .reference-categories {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    display: flex;
+    gap: 3px;
+    padding: 7px 9px;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .reference-categories button {
+    width: auto;
+    min-height: 36px;
+    flex: 0 0 auto;
+    padding: 0 10px;
+    border-radius: 4px;
+  }
+
+  .reference-categories button[aria-current="true"]::before {
+    display: none;
+  }
+
+  .reference-results {
+    overflow: visible;
+  }
+
+  .drawer-footer {
+    padding: 0 12px;
+  }
+
+  .about-content {
+    padding: 17px;
+  }
+
+  .dialog-header,
+  .drawer-header {
+    padding-right: 12px;
+    padding-left: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+    </style>
+      <!-- Standalone build: generated 2026-08-31T01:54:21.483Z -->
+  </head>
+  <body>
+    <a class="skip-link" href="#code-editor">Skip to editor</a>
+
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="brand" href="#" aria-label="Pseudocode Lab home">
+          <span class="brand-mark" aria-hidden="true"><span>{</span><span>}</span></span>
+          <span class="brand-copy">
+            <strong>Pseudocode Lab</strong>
+            <small>AP CSP practice runner</small>
+          </span>
+        </a>
+
+        <div class="header-actions" aria-label="Application actions">
+          <button class="button button-quiet" id="reference-button" type="button" aria-controls="reference-drawer" aria-expanded="false">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3.8 5.5c2.9-.9 5.6-.4 8.2 1.5 2.6-1.9 5.3-2.4 8.2-1.5v13.2c-2.9-.8-5.6-.3-8.2 1.5-2.6-1.8-5.3-2.3-8.2-1.5V5.5Z"/><path d="M12 7v13"/></svg>
+            <span>Reference</span>
+          </button>
+          <button class="button button-quiet" id="about-button" type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.2v.2"/></svg>
+            <span>About</span>
+          </button>
+          <button class="icon-button mobile-examples-button" id="examples-toggle" type="button" aria-label="Show examples" aria-expanded="false">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace" id="main-content">
+        <aside class="examples-rail" id="examples-rail" aria-label="Example programs">
+          <div class="rail-heading">
+            <h2>Examples</h2>
+            <button class="icon-button rail-close" id="examples-close" type="button" aria-label="Close examples">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+            </button>
+          </div>
+          <nav class="examples-list" id="examples-list" aria-label="Choose an example"></nav>
+          <div class="rail-tip">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9.4 18h5.2M10 22h4M8.6 14.8a7 7 0 1 1 6.8 0c-.7.5-.9 1.1-.9 1.7h-5c0-.6-.2-1.2-.9-1.7Z"/></svg>
+            <p>Errors link back to the exact source line.</p>
+          </div>
+        </aside>
+
+        <section class="editor-pane" aria-labelledby="editor-title">
+          <div class="pane-toolbar editor-toolbar">
+            <div class="file-title" id="editor-title">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6V3Z"/><path d="M14 3v5h5"/></svg>
+              <span>workspace.apcsp</span>
+            </div>
+            <div class="run-actions">
+              <button class="button button-primary" id="run-button" type="button" aria-keyshortcuts="Meta+Enter Control+Enter">
+                <svg aria-hidden="true" viewBox="0 0 24 24" class="icon-fill"><path d="m8 5 11 7-11 7V5Z"/></svg>
+                <span>Run</span>
+                <kbd>⌘ ↵</kbd>
+              </button>
+              <button class="button button-quiet" id="stop-button" type="button" disabled aria-keyshortcuts="Escape">
+                <svg aria-hidden="true" viewBox="0 0 24 24" class="icon-fill"><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+                <span>Stop</span>
+              </button>
+              <button class="button button-quiet" id="reset-button" type="button">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 8a8 8 0 1 0 1 6M19 3v5h-5"/></svg>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="editor-shell" id="editor-shell">
+            <pre class="line-numbers" id="line-numbers" aria-hidden="true">1</pre>
+            <div class="code-stage">
+              <pre class="code-highlight" id="code-highlight" aria-hidden="true"></pre>
+              <textarea
+                id="code-editor"
+                aria-label="AP CSP pseudocode editor"
+                aria-describedby="editor-help"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                wrap="off"
+              ></textarea>
+            </div>
+          </div>
+          <p class="sr-only" id="editor-help">Press Command Enter or Control Enter to run. Lists use one-based indexes.</p>
+          <div class="editor-status" aria-label="Editor status">
+            <span id="cursor-position">Line 1, Column 1</span>
+            <span id="line-count">1 line</span>
+          </div>
+        </section>
+
+        <aside class="results-pane" aria-label="Program results">
+          <button class="syntax-help" id="syntax-help" type="button">
+            <span>Need syntax help? Open the Reference guide.</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+          </button>
+
+          <div class="results-tabs" role="tablist" aria-label="Result views">
+            <button id="console-tab" role="tab" aria-selected="true" aria-controls="console-panel" type="button">Console</button>
+            <button id="robot-tab" role="tab" aria-selected="false" aria-controls="robot-panel" type="button">Robot</button>
+          </div>
+
+          <section class="result-view console-panel" id="console-panel" role="tabpanel" aria-labelledby="console-tab">
+            <div class="run-banner banner-idle" id="run-banner" role="status" aria-live="polite">
+              <span class="banner-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+              </span>
+              <strong id="run-message">Ready to run.</strong>
+              <span id="step-badge">0 steps</span>
+            </div>
+            <ol class="console-output" id="console-output" aria-label="Console output"></ol>
+            <div class="console-empty" id="console-empty">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 7 4 5-4 5M11 17h8"/></svg>
+              <p>Program output will appear here.</p>
+            </div>
+          </section>
+
+          <section class="result-view robot-panel" id="robot-panel" role="tabpanel" aria-labelledby="robot-tab" hidden>
+            <div class="robot-heading">
+              <div>
+                <strong>Robot world</strong>
+                <small id="robot-position">Row 4, Column 3 · north</small>
+              </div>
+              <button class="button button-compact button-quiet" id="reset-robot-button" type="button">Reset world</button>
+            </div>
+            <div class="robot-grid-wrap">
+              <div class="robot-grid" id="robot-grid" role="img" aria-label="Robot grid"></div>
+            </div>
+            <div class="robot-legend" aria-label="Robot legend">
+              <span><i class="legend-cell legend-start"></i>Start</span>
+              <span><i class="legend-cell legend-blocked"></i>Blocked</span>
+              <span><i class="legend-cell legend-path"></i>Path</span>
+            </div>
+          </section>
+
+          <section class="input-queue-section" aria-labelledby="input-queue-title">
+            <div class="section-label-row">
+              <label id="input-queue-title" for="input-queue">Input queue</label>
+              <button class="tooltip-button" type="button" aria-label="Input queue help" data-tooltip="Enter one value per line. Numbers and true/false are typed automatically; everything else is text.">?</button>
+            </div>
+            <div class="input-row">
+              <textarea id="input-queue" rows="2" placeholder="One INPUT() value per line"></textarea>
+              <button class="button button-compact button-quiet" id="clear-input-button" type="button">Clear</button>
+            </div>
+          </section>
+
+          <section class="execution-summary" aria-labelledby="execution-summary-title">
+            <div class="summary-heading">
+              <h2 id="execution-summary-title">Execution summary</h2>
+              <button class="button button-compact button-quiet" id="copy-output-button" type="button" disabled>
+                <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg>
+                Copy
+              </button>
+            </div>
+            <dl>
+              <div><dt>Status</dt><dd id="summary-status">Idle</dd></div>
+              <div><dt>Steps executed</dt><dd id="summary-steps">0</dd></div>
+              <div><dt>Inputs consumed</dt><dd id="summary-inputs">0</dd></div>
+              <div><dt>Output values</dt><dd id="summary-output">0</dd></div>
+              <div><dt>Time</dt><dd id="summary-time">—</dd></div>
+            </dl>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="status-bar">
+        <div class="ready-indicator"><span id="ready-dot"></span><strong id="app-status">Ready</strong></div>
+        <div class="syntax-status"><span>AP-style syntax</span><i>•</i><span>1-based list indexes</span><i>•</i><span>100,000-step limit</span></div>
+        <button class="theme-button" id="theme-button" type="button" aria-label="Switch color theme">
+          <svg class="theme-icon-light" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <span id="theme-label">Light</span>
+        </button>
+      </footer>
+    </div>
+
+    <div class="drawer-scrim" id="drawer-scrim" hidden></div>
+    <aside class="reference-drawer" id="reference-drawer" aria-labelledby="reference-title" aria-hidden="true">
+      <div class="drawer-header">
+        <div>
+          <h2 id="reference-title">AP CSP reference</h2>
+        </div>
+        <button class="icon-button" id="reference-close" type="button" aria-label="Close reference">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div class="reference-search-wrap">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+        <input id="reference-search" type="search" placeholder="Search instructions" aria-label="Search reference instructions" />
+      </div>
+      <p class="reference-attribution">Based on the College Board Exam Reference Sheet</p>
+      <div class="reference-body">
+        <nav class="reference-categories" id="reference-categories" aria-label="Reference sections"></nav>
+        <div class="reference-results" id="reference-results"></div>
+      </div>
+      <div class="drawer-footer">
+        <a href="https://apcentral.collegeboard.org/media/pdf/ap-computer-science-principles-course-and-exam-description.pdf" target="_blank" rel="noreferrer">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8"/><path d="M17 13v6H5V7h6"/></svg>
+          College Board source
+        </a>
+        <button class="button button-compact button-quiet" id="reference-footer-close" type="button">Close</button>
+      </div>
+    </aside>
+
+    <dialog class="about-dialog" id="about-dialog" aria-labelledby="about-title">
+      <div class="dialog-header">
+        <div>
+          <h2 id="about-title">About Pseudocode Lab</h2>
+          <p>What AP CSP covers — and where this runner fits</p>
+        </div>
+        <button class="icon-button" id="about-close" type="button" aria-label="Close about dialog">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div class="about-content" id="about-content"></div>
+    </dialog>
+
+    <dialog class="input-dialog" id="input-dialog" aria-labelledby="input-dialog-title">
+      <form method="dialog" id="input-form">
+        <div class="dialog-header compact-dialog-header">
+          <div>
+            <h2 id="input-dialog-title">INPUT() needs a value</h2>
+            <p id="input-dialog-copy">Enter the next program input.</p>
+          </div>
+        </div>
+        <label for="runtime-input">Value</label>
+        <input id="runtime-input" type="text" autocomplete="off" />
+        <div class="dialog-actions">
+          <button class="button button-quiet" value="cancel" type="submit">Cancel run</button>
+          <button class="button button-primary" value="submit" type="submit">Continue</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+(() => {
+"use strict";
+/**
+ * AP CSP Exam Reference Sheet notation interpreter.
+ *
+ * This module intentionally interprets a small AST. It never translates source
+ * to JavaScript and never uses eval/Function. The Unicode operators are the
+ * official spellings; ASCII_ALIASES documents the accepted typing conveniences.
+ */
+
+const DEFAULT_STEP_LIMIT = 100_000;
+const DEFAULT_CHUNK_SIZE = 500;
+
+const ASCII_ALIASES = Object.freeze({
+  '<-': '←',
+  '!=': '≠',
+  '>=': '≥',
+  '<=': '≤',
+});
+
+const KEYWORDS = new Map([
+  ['DISPLAY', 'DISPLAY'],
+  ['INPUT', 'INPUT'],
+  ['RANDOM', 'RANDOM'],
+  ['MOD', 'MOD'],
+  ['NOT', 'NOT'],
+  ['AND', 'AND'],
+  ['OR', 'OR'],
+  ['IF', 'IF'],
+  ['ELSE', 'ELSE'],
+  ['REPEAT', 'REPEAT'],
+  ['TIMES', 'TIMES'],
+  ['UNTIL', 'UNTIL'],
+  ['FOR', 'FOR'],
+  ['EACH', 'EACH'],
+  ['IN', 'IN'],
+  ['INSERT', 'INSERT'],
+  ['APPEND', 'APPEND'],
+  ['REMOVE', 'REMOVE'],
+  ['LENGTH', 'LENGTH'],
+  ['PROCEDURE', 'PROCEDURE'],
+  ['RETURN', 'RETURN'],
+  ['MOVE_FORWARD', 'MOVE_FORWARD'],
+  ['ROTATE_LEFT', 'ROTATE_LEFT'],
+  ['ROTATE_RIGHT', 'ROTATE_RIGHT'],
+  ['CAN_MOVE', 'CAN_MOVE'],
+  ['TRUE', 'TRUE'],
+  ['FALSE', 'FALSE'],
+]);
+
+const DIRECTION_WORDS = new Set(['forward', 'backward', 'left', 'right']);
+const CALLABLE_KEYWORDS = new Set([
+  'DISPLAY',
+  'INPUT',
+  'RANDOM',
+  'INSERT',
+  'APPEND',
+  'REMOVE',
+  'LENGTH',
+  'MOVE_FORWARD',
+  'ROTATE_LEFT',
+  'ROTATE_RIGHT',
+  'CAN_MOVE',
+]);
+
+const BUILTIN_NAMES = new Set(CALLABLE_KEYWORDS);
+const VOID = Symbol('AP_CSP_VOID');
+const NO_RESUME_VALUE = Symbol('AP_CSP_NO_RESUME_VALUE');
+
+function point(offset, line, column) {
+  return { offset, line, column };
+}
+
+function span(start, end) {
+  return {
+    start: { ...start },
+    end: { ...end },
+  };
+}
+
+function copyLoc(loc) {
+  if (!loc) return null;
+  return span(loc.start, loc.end);
+}
+
+function mergeLoc(first, last) {
+  const a = first?.loc ?? first;
+  const b = last?.loc ?? last;
+  if (!a || !b) return null;
+  return span(a.start, b.end);
+}
+
+function freezeShallow(value) {
+  return Object.freeze(value);
+}
+
+class APCSPError extends Error {
+  constructor({
+    phase = 'runtime',
+    code = 'APCSP_ERROR',
+    message,
+    loc = null,
+    hint = null,
+    details = null,
+    callStack = [],
+    cause,
+  }) {
+    super(message, cause ? { cause } : undefined);
+    this.name = 'APCSPError';
+    this.phase = phase;
+    this.code = code;
+    this.loc = copyLoc(loc);
+    this.hint = hint;
+    this.details = details == null ? null : cloneForPublic(details);
+    this.callStack = callStack.map((frame) => ({
+      name: frame.name,
+      callLoc: copyLoc(frame.callLoc),
+      definitionLoc: copyLoc(frame.definitionLoc),
+    }));
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      phase: this.phase,
+      code: this.code,
+      message: this.message,
+      loc: copyLoc(this.loc),
+      hint: this.hint,
+      details: cloneForPublic(this.details),
+      callStack: this.callStack.map((frame) => ({
+        name: frame.name,
+        callLoc: copyLoc(frame.callLoc),
+        definitionLoc: copyLoc(frame.definitionLoc),
+      })),
+    };
+  }
+}
+
+function languageError(phase, code, message, loc, extras = {}) {
+  return new APCSPError({ phase, code, message, loc, ...extras });
+}
+
+function isDigit(char) {
+  return char >= '0' && char <= '9';
+}
+
+function isIdentifierStart(char) {
+  return (
+    (char >= 'a' && char <= 'z') ||
+    (char >= 'A' && char <= 'Z') ||
+    char === '_'
+  );
+}
+
+function isIdentifierPart(char) {
+  return isIdentifierStart(char) || isDigit(char);
+}
+
+/** Tokenize AP CSP text notation. The returned array has an aliasesUsed array. */
+function tokenize(source) {
+  if (typeof source !== 'string') {
+    throw languageError(
+      'tokenize',
+      'SOURCE_TYPE',
+      'Program source must be a string.',
+      null,
+    );
+  }
+
+  const tokens = [];
+  const aliasesUsed = [];
+  let index = 0;
+  let line = 1;
+  let column = 1;
+
+  const here = () => point(index, line, column);
+
+  const advance = () => {
+    const char = source[index++];
+    if (char === '\n') {
+      line += 1;
+      column = 1;
+    } else {
+      column += 1;
+    }
+    return char;
+  };
+
+  const add = (type, value, start, lexeme, aliasFor = null) => {
+    const token = {
+      type,
+      value,
+      lexeme,
+      loc: span(start, here()),
+      aliasFor,
+    };
+    tokens.push(token);
+    if (aliasFor) {
+      aliasesUsed.push({ alias: lexeme, official: aliasFor, loc: copyLoc(token.loc) });
+    }
+  };
+
+  while (index < source.length) {
+    const start = here();
+    const char = source[index];
+
+    if (char === ' ' || char === '\t' || char === '\f' || char === '\v') {
+      advance();
+      continue;
+    }
+
+    if (char === '\r') {
+      advance();
+      if (source[index] === '\n') {
+        advance();
+      } else {
+        line += 1;
+        column = 1;
+      }
+      add('NEWLINE', '\n', start, source.slice(start.offset, index));
+      continue;
+    }
+
+    if (char === '\n') {
+      advance();
+      add('NEWLINE', '\n', start, '\n');
+      continue;
+    }
+
+    if (char === '/' && source[index + 1] === '/') {
+      while (index < source.length && source[index] !== '\n' && source[index] !== '\r') {
+        advance();
+      }
+      continue;
+    }
+
+    const two = source.slice(index, index + 2);
+    if (Object.hasOwn(ASCII_ALIASES, two)) {
+      advance();
+      advance();
+      const official = ASCII_ALIASES[two];
+      const type = official === '←' ? 'ARROW' : official === '≠' ? 'NEQ' : official === '≥' ? 'GTE' : 'LTE';
+      add(type, official, start, two, official);
+      continue;
+    }
+
+    const singleTokens = {
+      '←': ['ARROW', '←'],
+      '≠': ['NEQ', '≠'],
+      '≥': ['GTE', '≥'],
+      '≤': ['LTE', '≤'],
+      '=': ['EQ', '='],
+      '>': ['GT', '>'],
+      '<': ['LT', '<'],
+      '+': ['PLUS', '+'],
+      '-': ['MINUS', '-'],
+      '*': ['STAR', '*'],
+      '/': ['SLASH', '/'],
+      '(': ['LPAREN', '('],
+      ')': ['RPAREN', ')'],
+      '{': ['LBRACE', '{'],
+      '}': ['RBRACE', '}'],
+      '[': ['LBRACKET', '['],
+      ']': ['RBRACKET', ']'],
+      ',': ['COMMA', ','],
+      ';': ['SEMI', ';'],
+    };
+
+    if (singleTokens[char]) {
+      advance();
+      const [type, value] = singleTokens[char];
+      add(type, value, start, char);
+      continue;
+    }
+
+    if (char === '"') {
+      advance();
+      let value = '';
+      let terminated = false;
+      while (index < source.length) {
+        const current = advance();
+        if (current === '"') {
+          terminated = true;
+          break;
+        }
+        if (current === '\n' || current === '\r') {
+          throw languageError(
+            'tokenize',
+            'UNTERMINATED_STRING',
+            'String literals cannot continue across a line.',
+            span(start, here()),
+            { hint: 'Close the string with a double quote before the end of the line.' },
+          );
+        }
+        if (current === '\\') {
+          if (index >= source.length) break;
+          const escaped = advance();
+          const escapes = { n: '\n', r: '\r', t: '\t', '"': '"', '\\': '\\' };
+          if (!Object.hasOwn(escapes, escaped)) {
+            throw languageError(
+              'tokenize',
+              'INVALID_ESCAPE',
+              `Unsupported escape sequence \\${escaped}.`,
+              span(start, here()),
+              { hint: 'Supported escapes are \\n, \\r, \\t, \\" and \\\\.' },
+            );
+          }
+          value += escapes[escaped];
+        } else {
+          value += current;
+        }
+      }
+      if (!terminated) {
+        throw languageError(
+          'tokenize',
+          'UNTERMINATED_STRING',
+          'Unterminated string literal.',
+          span(start, here()),
+          { hint: 'Close the string with a double quote.' },
+        );
+      }
+      add('STRING', value, start, source.slice(start.offset, index));
+      continue;
+    }
+
+    if (isDigit(char) || (char === '.' && isDigit(source[index + 1]))) {
+      if (char === '.') advance();
+      while (isDigit(source[index])) advance();
+      if (source[index] === '.') {
+        advance();
+        while (isDigit(source[index])) advance();
+      }
+      if (source[index] === 'e' || source[index] === 'E') {
+        const exponentStart = index;
+        advance();
+        if (source[index] === '+' || source[index] === '-') advance();
+        if (!isDigit(source[index])) {
+          throw languageError(
+            'tokenize',
+            'INVALID_NUMBER',
+            'A numeric exponent must contain at least one digit.',
+            span(start, here()),
+          );
+        }
+        while (isDigit(source[index])) advance();
+        if (index === exponentStart + 1) advance();
+      }
+      const lexeme = source.slice(start.offset, index);
+      const value = Number(lexeme);
+      if (!Number.isFinite(value)) {
+        throw languageError(
+          'tokenize',
+          'INVALID_NUMBER',
+          `The number ${lexeme} is outside the supported finite range.`,
+          span(start, here()),
+        );
+      }
+      add('NUMBER', value, start, lexeme);
+      continue;
+    }
+
+    if (isIdentifierStart(char)) {
+      advance();
+      while (isIdentifierPart(source[index])) advance();
+      const lexeme = source.slice(start.offset, index);
+      const upper = lexeme.toUpperCase();
+      const lower = lexeme.toLowerCase();
+      if (DIRECTION_WORDS.has(lower)) {
+        add('DIRECTION', lower, start, lexeme);
+      } else if (KEYWORDS.has(upper)) {
+        add(KEYWORDS.get(upper), upper, start, lexeme);
+      } else {
+        add('IDENTIFIER', lexeme, start, lexeme);
+      }
+      continue;
+    }
+
+    advance();
+    throw languageError(
+      'tokenize',
+      'UNEXPECTED_CHARACTER',
+      `Unexpected character ${JSON.stringify(char)}.`,
+      span(start, here()),
+    );
+  }
+
+  const eof = here();
+  tokens.push({ type: 'EOF', value: null, lexeme: '', loc: span(eof, eof), aliasFor: null });
+  Object.defineProperty(tokens, 'aliasesUsed', {
+    value: aliasesUsed,
+    enumerable: false,
+    writable: false,
+  });
+  return tokens;
+}
+
+class Parser {
+  constructor(source) {
+    this.source = source;
+    this.tokens = tokenize(source);
+    this.current = 0;
+    this.procedureDepth = 0;
+  }
+
+  peek(offset = 0) {
+    return this.tokens[Math.min(this.current + offset, this.tokens.length - 1)];
+  }
+
+  previous() {
+    return this.tokens[this.current - 1];
+  }
+
+  check(type) {
+    return this.peek().type === type;
+  }
+
+  match(...types) {
+    if (!types.includes(this.peek().type)) return false;
+    this.current += 1;
+    return true;
+  }
+
+  consume(type, message, code = 'EXPECTED_TOKEN') {
+    if (this.check(type)) return this.tokens[this.current++];
+    throw languageError('parse', code, message, this.peek().loc, {
+      details: { expected: type, found: this.peek().type },
+    });
+  }
+
+  skipSeparators() {
+    while (this.match('NEWLINE', 'SEMI')) {
+      // Intentional.
+    }
+  }
+
+  requireStatementEnd() {
+    if (this.check('EOF') || this.check('RBRACE')) return;
+    if (this.match('NEWLINE', 'SEMI')) {
+      this.skipSeparators();
+      return;
+    }
+    throw languageError(
+      'parse',
+      'EXPECTED_STATEMENT_END',
+      'Expected a line break or semicolon after the statement.',
+      this.peek().loc,
+    );
+  }
+
+  parseProgram() {
+    const start = this.peek();
+    const body = [];
+    this.skipSeparators();
+    while (!this.check('EOF')) {
+      body.push(this.parseStatement(true));
+      this.skipSeparators();
+    }
+    const end = this.peek();
+    const program = {
+      type: 'Program',
+      body,
+      loc: mergeLoc(start, end),
+      aliasesUsed: this.tokens.aliasesUsed.map((entry) => ({
+        ...entry,
+        loc: copyLoc(entry.loc),
+      })),
+    };
+    validateProgram(program);
+    return program;
+  }
+
+  parseStatement(topLevel = false) {
+    if (this.match('PROCEDURE')) {
+      const start = this.previous();
+      if (!topLevel) {
+        throw languageError(
+          'parse',
+          'PROCEDURE_NOT_TOP_LEVEL',
+          'PROCEDURE declarations must appear at the top level.',
+          start.loc,
+          { hint: 'Move the PROCEDURE declaration outside every IF, loop, and other PROCEDURE block.' },
+        );
+      }
+      return this.parseProcedure(start);
+    }
+    if (this.match('IF')) return this.parseIf(this.previous());
+    if (this.match('REPEAT')) return this.parseRepeat(this.previous());
+    if (this.match('FOR')) return this.parseForEach(this.previous());
+    if (this.match('RETURN')) return this.parseReturn(this.previous());
+    return this.parseAssignmentOrExpressionStatement();
+  }
+
+  parseProcedure(start) {
+    if (this.procedureDepth > 0) {
+      throw languageError(
+        'parse',
+        'NESTED_PROCEDURE',
+        'PROCEDURE declarations must be at the top level.',
+        start.loc,
+      );
+    }
+    const name = this.consume(
+      'IDENTIFIER',
+      'Expected a procedure name after PROCEDURE.',
+      'EXPECTED_PROCEDURE_NAME',
+    );
+    this.consume('LPAREN', 'Expected ( after the procedure name.');
+    const params = [];
+    if (!this.check('RPAREN')) {
+      do {
+        params.push(
+          this.consume(
+            'IDENTIFIER',
+            'Expected a parameter name.',
+            'EXPECTED_PARAMETER_NAME',
+          ),
+        );
+      } while (this.match('COMMA'));
+    }
+    this.consume('RPAREN', 'Expected ) after the parameter list.');
+    this.procedureDepth += 1;
+    let block;
+    try {
+      block = this.parseBlock();
+    } finally {
+      this.procedureDepth -= 1;
+    }
+    return {
+      type: 'ProcedureDecl',
+      name: name.value,
+      params: params.map((token) => ({ name: token.value, loc: copyLoc(token.loc) })),
+      body: block.body,
+      loc: mergeLoc(start, block),
+    };
+  }
+
+  parseIf(start) {
+    this.consume('LPAREN', 'Expected ( after IF.');
+    const condition = this.parseExpression();
+    this.consume('RPAREN', 'Expected ) after the IF condition.');
+    const consequent = this.parseBlock();
+    this.skipSeparators();
+    let alternate = null;
+    if (this.match('ELSE')) alternate = this.parseBlock();
+    return {
+      type: 'IfStmt',
+      condition,
+      consequent: consequent.body,
+      alternate: alternate?.body ?? null,
+      loc: mergeLoc(start, alternate ?? consequent),
+    };
+  }
+
+  parseRepeat(start) {
+    if (this.match('UNTIL')) {
+      this.consume('LPAREN', 'Expected ( after UNTIL.');
+      const condition = this.parseExpression();
+      this.consume('RPAREN', 'Expected ) after the REPEAT UNTIL condition.');
+      const block = this.parseBlock();
+      return {
+        type: 'RepeatUntilStmt',
+        condition,
+        body: block.body,
+        loc: mergeLoc(start, block),
+      };
+    }
+
+    const count = this.parseExpression();
+    this.consume('TIMES', 'Expected TIMES after the repeat count.', 'EXPECTED_TIMES');
+    const block = this.parseBlock();
+    return {
+      type: 'RepeatTimesStmt',
+      count,
+      body: block.body,
+      loc: mergeLoc(start, block),
+    };
+  }
+
+  parseForEach(start) {
+    this.consume('EACH', 'Expected EACH after FOR.', 'EXPECTED_EACH');
+    const item = this.consume(
+      'IDENTIFIER',
+      'Expected a loop variable after FOR EACH.',
+      'EXPECTED_LOOP_VARIABLE',
+    );
+    this.consume('IN', 'Expected IN after the loop variable.', 'EXPECTED_IN');
+    const iterable = this.parseExpression();
+    const block = this.parseBlock();
+    return {
+      type: 'ForEachStmt',
+      item: item.value,
+      itemLoc: copyLoc(item.loc),
+      iterable,
+      body: block.body,
+      loc: mergeLoc(start, block),
+    };
+  }
+
+  parseReturn(start) {
+    if (this.procedureDepth === 0) {
+      throw languageError(
+        'parse',
+        'RETURN_OUTSIDE_PROCEDURE',
+        'RETURN can only appear inside a PROCEDURE.',
+        start.loc,
+      );
+    }
+    this.consume('LPAREN', 'Expected ( after RETURN.');
+    const value = this.parseExpression();
+    const close = this.consume('RPAREN', 'Expected ) after the RETURN value.');
+    this.requireStatementEnd();
+    return { type: 'ReturnStmt', value, loc: mergeLoc(start, close) };
+  }
+
+  parseBlock() {
+    // The official reference sheet places opening braces on the following line.
+    this.skipSeparators();
+    const start = this.consume('LBRACE', 'Expected { before the block.');
+    const body = [];
+    this.skipSeparators();
+    while (!this.check('RBRACE') && !this.check('EOF')) {
+      body.push(this.parseStatement());
+      this.skipSeparators();
+    }
+    const end = this.consume('RBRACE', 'Expected } after the block.', 'UNCLOSED_BLOCK');
+    return { type: 'Block', body, loc: mergeLoc(start, end) };
+  }
+
+  parseAssignmentOrExpressionStatement() {
+    const expression = this.parseExpression();
+    if (this.match('ARROW')) {
+      if (expression.type === 'DirectionExpr') {
+        throw languageError(
+          'parse',
+          'RESERVED_DIRECTION_VALUE',
+          `${expression.value} is reserved for CAN_MOVE and cannot be used as an assignment target.`,
+          expression.loc,
+          { hint: `Use ${expression.value} only as the direction in CAN_MOVE(${expression.value}).` },
+        );
+      }
+      if (expression.type !== 'VariableExpr' && expression.type !== 'IndexExpr') {
+        throw languageError(
+          'parse',
+          'INVALID_ASSIGNMENT_TARGET',
+          'The left side of ← must be a variable or list element.',
+          expression.loc,
+        );
+      }
+      const value = this.parseExpression();
+      const node = {
+        type: 'AssignStmt',
+        target: expression,
+        value,
+        loc: mergeLoc(expression, value),
+      };
+      this.requireStatementEnd();
+      return node;
+    }
+    if (expression.type !== 'CallExpr') {
+      throw languageError(
+        'parse',
+        'INVALID_EXPRESSION_STATEMENT',
+        'Only a procedure or built-in call can be used as a statement.',
+        expression.loc,
+      );
+    }
+    const node = { type: 'ExpressionStmt', expression, loc: copyLoc(expression.loc) };
+    this.requireStatementEnd();
+    return node;
+  }
+
+  parseExpression() {
+    return this.parseOr();
+  }
+
+  parseOr() {
+    let expression = this.parseAnd();
+    while (this.match('OR')) {
+      const operator = this.previous();
+      const right = this.parseAnd();
+      expression = {
+        type: 'LogicalExpr',
+        operator: operator.type,
+        left: expression,
+        right,
+        loc: mergeLoc(expression, right),
+      };
+    }
+    return expression;
+  }
+
+  parseAnd() {
+    let expression = this.parseNot();
+    while (this.match('AND')) {
+      const operator = this.previous();
+      const right = this.parseNot();
+      expression = {
+        type: 'LogicalExpr',
+        operator: operator.type,
+        left: expression,
+        right,
+        loc: mergeLoc(expression, right),
+      };
+    }
+    return expression;
+  }
+
+  parseNot() {
+    if (this.match('NOT')) {
+      const operator = this.previous();
+      const operand = this.parseNot();
+      return {
+        type: 'UnaryExpr',
+        operator: operator.type,
+        operand,
+        loc: mergeLoc(operator, operand),
+      };
+    }
+    return this.parseComparison();
+  }
+
+  parseComparison() {
+    let expression = this.parseTerm();
+    if (this.match('EQ', 'NEQ', 'GT', 'GTE', 'LT', 'LTE')) {
+      const operator = this.previous();
+      const right = this.parseTerm();
+      expression = {
+        type: 'BinaryExpr',
+        operator: operator.type,
+        left: expression,
+        right,
+        loc: mergeLoc(expression, right),
+      };
+      if (this.check('EQ') || this.check('NEQ') || this.check('GT') || this.check('GTE') || this.check('LT') || this.check('LTE')) {
+        throw languageError(
+          'parse',
+          'CHAINED_COMPARISON',
+          'Chained comparisons are not supported; combine comparisons with AND.',
+          this.peek().loc,
+        );
+      }
+    }
+    return expression;
+  }
+
+  parseTerm() {
+    let expression = this.parseFactor();
+    while (this.match('PLUS', 'MINUS')) {
+      const operator = this.previous();
+      const right = this.parseFactor();
+      expression = {
+        type: 'BinaryExpr',
+        operator: operator.type,
+        left: expression,
+        right,
+        loc: mergeLoc(expression, right),
+      };
+    }
+    return expression;
+  }
+
+  parseFactor() {
+    let expression = this.parseUnary();
+    while (this.match('STAR', 'SLASH', 'MOD')) {
+      const operator = this.previous();
+      const right = this.parseUnary();
+      expression = {
+        type: 'BinaryExpr',
+        operator: operator.type,
+        left: expression,
+        right,
+        loc: mergeLoc(expression, right),
+      };
+    }
+    return expression;
+  }
+
+  parseUnary() {
+    if (this.match('MINUS', 'PLUS')) {
+      const operator = this.previous();
+      const operand = this.parseUnary();
+      return {
+        type: 'UnaryExpr',
+        operator: operator.type,
+        operand,
+        loc: mergeLoc(operator, operand),
+      };
+    }
+    return this.parsePostfix();
+  }
+
+  parsePostfix() {
+    let expression = this.parsePrimary();
+    for (;;) {
+      if (this.match('LPAREN')) {
+        const args = [];
+        if (!this.check('RPAREN')) {
+          do {
+            args.push(this.parseExpression());
+          } while (this.match('COMMA'));
+        }
+        const close = this.consume('RPAREN', 'Expected ) after arguments.');
+        expression = {
+          type: 'CallExpr',
+          callee: expression,
+          args,
+          loc: mergeLoc(expression, close),
+        };
+      } else if (this.match('LBRACKET')) {
+        const index = this.parseExpression();
+        const close = this.consume('RBRACKET', 'Expected ] after the list index.');
+        expression = {
+          type: 'IndexExpr',
+          list: expression,
+          index,
+          loc: mergeLoc(expression, close),
+        };
+      } else {
+        break;
+      }
+    }
+    return expression;
+  }
+
+  parsePrimary() {
+    if (this.match('NUMBER')) {
+      const token = this.previous();
+      return { type: 'LiteralExpr', value: token.value, loc: copyLoc(token.loc) };
+    }
+    if (this.match('STRING')) {
+      const token = this.previous();
+      return { type: 'LiteralExpr', value: token.value, loc: copyLoc(token.loc) };
+    }
+    if (this.match('TRUE', 'FALSE')) {
+      const token = this.previous();
+      return { type: 'LiteralExpr', value: token.type === 'TRUE', loc: copyLoc(token.loc) };
+    }
+    if (this.match('DIRECTION')) {
+      const token = this.previous();
+      return { type: 'DirectionExpr', value: token.value, loc: copyLoc(token.loc) };
+    }
+    if (this.match('IDENTIFIER', ...CALLABLE_KEYWORDS)) {
+      const token = this.previous();
+      return {
+        type: 'VariableExpr',
+        name: token.type === 'IDENTIFIER' ? token.value : token.type,
+        loc: copyLoc(token.loc),
+      };
+    }
+    if (this.match('LPAREN')) {
+      const start = this.previous();
+      const expression = this.parseExpression();
+      const end = this.consume('RPAREN', 'Expected ) after the expression.');
+      return { ...expression, loc: mergeLoc(start, end) };
+    }
+    if (this.match('LBRACKET')) {
+      const start = this.previous();
+      const elements = [];
+      if (!this.check('RBRACKET')) {
+        do {
+          elements.push(this.parseExpression());
+        } while (this.match('COMMA'));
+      }
+      const end = this.consume('RBRACKET', 'Expected ] after the list literal.');
+      return { type: 'ListExpr', elements, loc: mergeLoc(start, end) };
+    }
+    throw languageError(
+      'parse',
+      'EXPECTED_EXPRESSION',
+      'Expected a number, string, Boolean, list, variable, or call.',
+      this.peek().loc,
+    );
+  }
+}
+
+/** Parse source into a location-bearing AST. */
+function parseProgram(source) {
+  return new Parser(source).parseProgram();
+}
+
+function walkNode(node, visitor, parent = null) {
+  if (!node || typeof node !== 'object') return;
+  visitor(node, parent);
+  switch (node.type) {
+    case 'Program':
+      node.body.forEach((child) => walkNode(child, visitor, node));
+      break;
+    case 'ProcedureDecl':
+      node.body.forEach((child) => walkNode(child, visitor, node));
+      break;
+    case 'IfStmt':
+      walkNode(node.condition, visitor, node);
+      node.consequent.forEach((child) => walkNode(child, visitor, node));
+      node.alternate?.forEach((child) => walkNode(child, visitor, node));
+      break;
+    case 'RepeatTimesStmt':
+      walkNode(node.count, visitor, node);
+      node.body.forEach((child) => walkNode(child, visitor, node));
+      break;
+    case 'RepeatUntilStmt':
+      walkNode(node.condition, visitor, node);
+      node.body.forEach((child) => walkNode(child, visitor, node));
+      break;
+    case 'ForEachStmt':
+      walkNode(node.iterable, visitor, node);
+      node.body.forEach((child) => walkNode(child, visitor, node));
+      break;
+    case 'ReturnStmt':
+      walkNode(node.value, visitor, node);
+      break;
+    case 'AssignStmt':
+      walkNode(node.target, visitor, node);
+      walkNode(node.value, visitor, node);
+      break;
+    case 'ExpressionStmt':
+      walkNode(node.expression, visitor, node);
+      break;
+    case 'LogicalExpr':
+    case 'BinaryExpr':
+      walkNode(node.left, visitor, node);
+      walkNode(node.right, visitor, node);
+      break;
+    case 'UnaryExpr':
+      walkNode(node.operand, visitor, node);
+      break;
+    case 'CallExpr':
+      walkNode(node.callee, visitor, node);
+      node.args.forEach((arg) => walkNode(arg, visitor, node));
+      break;
+    case 'IndexExpr':
+      walkNode(node.list, visitor, node);
+      walkNode(node.index, visitor, node);
+      break;
+    case 'ListExpr':
+      node.elements.forEach((element) => walkNode(element, visitor, node));
+      break;
+    default:
+      break;
+  }
+}
+
+function validateProgram(program) {
+  const procedures = new Map();
+  for (const statement of program.body) {
+    if (statement.type !== 'ProcedureDecl') continue;
+    if (BUILTIN_NAMES.has(statement.name.toUpperCase())) {
+      throw languageError(
+        'validate',
+        'RESERVED_PROCEDURE_NAME',
+        `${statement.name} is a built-in name and cannot be redefined.`,
+        statement.loc,
+      );
+    }
+    if (procedures.has(statement.name)) {
+      throw languageError(
+        'validate',
+        'DUPLICATE_PROCEDURE',
+        `PROCEDURE ${statement.name} is declared more than once.`,
+        statement.loc,
+        { details: { firstDeclaration: copyLoc(procedures.get(statement.name).loc) } },
+      );
+    }
+    const names = new Set();
+    for (const parameter of statement.params) {
+      if (names.has(parameter.name)) {
+        throw languageError(
+          'validate',
+          'DUPLICATE_PARAMETER',
+          `Parameter ${parameter.name} appears more than once.`,
+          parameter.loc,
+        );
+      }
+      names.add(parameter.name);
+    }
+    procedures.set(statement.name, statement);
+  }
+
+  walkNode(program, (node, parent) => {
+    if (node.type === 'ProcedureDecl' && parent?.type !== 'Program') {
+      throw languageError(
+        'validate',
+        'PROCEDURE_NOT_TOP_LEVEL',
+        'PROCEDURE declarations must appear at the top level.',
+        node.loc,
+        { hint: 'Move the PROCEDURE declaration outside every IF, loop, and other PROCEDURE block.' },
+      );
+    }
+
+    if (node.type === 'VariableExpr' && BUILTIN_NAMES.has(node.name)) {
+      const isCallTarget = parent?.type === 'CallExpr' && parent.callee === node;
+      if (!isCallTarget) {
+        throw languageError(
+          'validate',
+          'RESERVED_BUILTIN_VALUE',
+          `${node.name} is a built-in procedure name and cannot be used as a variable or value.`,
+          node.loc,
+          { hint: `Call ${node.name} with parentheses instead.` },
+        );
+      }
+    }
+
+    if (node.type === 'DirectionExpr') {
+      const isCanMoveArgument =
+        parent?.type === 'CallExpr' &&
+        parent.callee?.type === 'VariableExpr' &&
+        parent.callee.name === 'CAN_MOVE' &&
+        parent.args.includes(node);
+      if (!isCanMoveArgument) {
+        throw languageError(
+          'validate',
+          'RESERVED_DIRECTION_VALUE',
+          `${node.value} is reserved for CAN_MOVE and cannot be used as a variable or general value.`,
+          node.loc,
+          { hint: `Use it only as the direction in CAN_MOVE(${node.value}).` },
+        );
+      }
+    }
+
+    if (node.type !== 'CallExpr' || node.callee.type !== 'VariableExpr') return;
+    const declaration = procedures.get(node.callee.name);
+    if (declaration && declaration.params.length !== node.args.length) {
+      throw languageError(
+        'validate',
+        'ARITY_MISMATCH',
+        `${declaration.name} expects ${declaration.params.length} argument(s), but ${node.args.length} were supplied.`,
+        node.loc,
+        { details: { expected: declaration.params.length, actual: node.args.length } },
+      );
+    }
+  });
+}
+
+function cloneLanguageValue(value, seen = new Map()) {
+  if (
+    typeof value === 'number' ||
+    typeof value === 'string' ||
+    typeof value === 'boolean' ||
+    value === VOID
+  ) {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    if (seen.has(value)) return seen.get(value);
+    const clone = [];
+    seen.set(value, clone);
+    for (const item of value) clone.push(cloneLanguageValue(item, seen));
+    return clone;
+  }
+  throw new TypeError('Unsupported AP CSP value.');
+}
+
+function cloneForPublic(value, seen = new Map()) {
+  if (value == null || typeof value === 'string' || typeof value === 'boolean') return value;
+  if (typeof value === 'number') return Object.is(value, -0) ? 0 : value;
+  if (value === VOID) return null;
+  if (Array.isArray(value)) {
+    if (seen.has(value)) return '[Circular]';
+    const clone = [];
+    seen.set(value, clone);
+    for (const item of value) clone.push(cloneForPublic(item, seen));
+    return clone;
+  }
+  if (value instanceof Map) {
+    return Object.fromEntries(
+      [...value.entries()].map(([key, item]) => [key, cloneForPublic(item, seen)]),
+    );
+  }
+  if (typeof value === 'object') {
+    if (seen.has(value)) return '[Circular]';
+    const clone = {};
+    seen.set(value, clone);
+    for (const [key, item] of Object.entries(value)) clone[key] = cloneForPublic(item, seen);
+    return clone;
+  }
+  return String(value);
+}
+
+function renderValue(value, seen = new Set(), depth = 0) {
+  if (value === VOID) throw new TypeError('Cannot display a procedure with no return value.');
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return Object.is(value, -0) ? '0' : String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (Array.isArray(value)) {
+    if (seen.has(value)) return '[Circular]';
+    if (depth >= 20) return '[…]';
+    seen.add(value);
+    const rendered = value.slice(0, 1_000).map((item) => renderValue(item, seen, depth + 1));
+    if (value.length > 1_000) rendered.push('…');
+    seen.delete(value);
+    return `[${rendered.join(', ')}]`;
+  }
+  return String(value);
+}
+
+class Environment {
+  constructor(parent = null, isGlobal = false) {
+    this.parent = parent;
+    this.isGlobal = isGlobal;
+    this.values = new Map();
+  }
+
+  hasLocal(name) {
+    return this.values.has(name);
+  }
+
+  define(name, value) {
+    this.values.set(name, value);
+  }
+
+  assign(name, value) {
+    // AP does not define scope. This runner's convention is procedure-local
+    // assignment; globals are only written by top-level statements.
+    this.values.set(name, value);
+  }
+
+  get(name) {
+    if (this.values.has(name)) return this.values.get(name);
+    if (this.parent) return this.parent.get(name);
+    return undefined;
+  }
+
+  contains(name) {
+    if (this.values.has(name)) return true;
+    return this.parent ? this.parent.contains(name) : false;
+  }
+}
+
+class ReturnCompletion {
+  constructor(value) {
+    this.value = value;
+  }
+}
+
+const CARDINALS = ['north', 'east', 'south', 'west'];
+const DELTAS = {
+  north: [-1, 0],
+  east: [0, 1],
+  south: [1, 0],
+  west: [0, -1],
+};
+const RELATIVE_TURNS = { forward: 0, right: 1, backward: 2, left: 3 };
+
+function normalizeRobot(config) {
+  if (config == null) return null;
+  const rows = config.rows;
+  const columns = config.columns;
+  const start = config.start ?? {};
+  if (!Number.isSafeInteger(rows) || rows < 1 || !Number.isSafeInteger(columns) || columns < 1) {
+    throw languageError(
+      'configuration',
+      'INVALID_ROBOT_GRID',
+      'Robot rows and columns must be positive integers.',
+      null,
+    );
+  }
+  const row = start.row;
+  const column = start.column;
+  const direction = String(start.direction ?? '').toLowerCase();
+  if (!Number.isSafeInteger(row) || row < 1 || row > rows || !Number.isSafeInteger(column) || column < 1 || column > columns) {
+    throw languageError(
+      'configuration',
+      'INVALID_ROBOT_START',
+      'The robot start position must be inside the grid.',
+      null,
+    );
+  }
+  if (!CARDINALS.includes(direction)) {
+    throw languageError(
+      'configuration',
+      'INVALID_ROBOT_DIRECTION',
+      'Robot start direction must be north, east, south, or west.',
+      null,
+    );
+  }
+  const blocked = new Set();
+  for (const cell of config.blocked ?? []) {
+    const blockedRow = Array.isArray(cell) ? cell[0] : cell?.row;
+    const blockedColumn = Array.isArray(cell) ? cell[1] : cell?.column;
+    if (
+      !Number.isSafeInteger(blockedRow) ||
+      blockedRow < 1 ||
+      blockedRow > rows ||
+      !Number.isSafeInteger(blockedColumn) ||
+      blockedColumn < 1 ||
+      blockedColumn > columns
+    ) {
+      throw languageError(
+        'configuration',
+        'INVALID_BLOCKED_CELL',
+        'Every blocked robot cell must be inside the grid.',
+        null,
+      );
+    }
+    blocked.add(`${blockedRow},${blockedColumn}`);
+  }
+  if (blocked.has(`${row},${column}`)) {
+    throw languageError(
+      'configuration',
+      'BLOCKED_ROBOT_START',
+      'The robot cannot start on a blocked cell.',
+      null,
+    );
+  }
+  return { rows, columns, blocked, row, column, direction };
+}
+
+function publicRobot(robot) {
+  if (!robot) return null;
+  return {
+    rows: robot.rows,
+    columns: robot.columns,
+    row: robot.row,
+    column: robot.column,
+    direction: robot.direction,
+    blocked: [...robot.blocked].map((key) => {
+      const [row, column] = key.split(',').map(Number);
+      return { row, column };
+    }),
+  };
+}
+
+class Runtime {
+  constructor(program, options) {
+    this.program = program;
+    this.options = options;
+    this.stepLimit = options.stepLimit ?? DEFAULT_STEP_LIMIT;
+    if (!Number.isSafeInteger(this.stepLimit) || this.stepLimit < 1) {
+      throw languageError(
+        'configuration',
+        'INVALID_STEP_LIMIT',
+        'stepLimit must be a positive safe integer.',
+        null,
+      );
+    }
+    this.maxCallDepth = options.maxCallDepth ?? 256;
+    if (!Number.isSafeInteger(this.maxCallDepth) || this.maxCallDepth < 1) {
+      throw languageError(
+        'configuration',
+        'INVALID_CALL_DEPTH',
+        'maxCallDepth must be a positive safe integer.',
+        null,
+      );
+    }
+    this.rng = options.rng ?? Math.random;
+    if (typeof this.rng !== 'function') {
+      throw languageError('configuration', 'INVALID_RNG', 'rng must be a function.', null);
+    }
+    this.inputQueue = cloneForPublic(options.inputQueue ?? []);
+    if (!Array.isArray(this.inputQueue)) {
+      throw languageError(
+        'configuration',
+        'INVALID_INPUT_QUEUE',
+        'inputQueue must be an array.',
+        null,
+      );
+    }
+    this.inputIndex = 0;
+    this.inputCount = 0;
+    this.inputRequestCount = 0;
+    this.global = new Environment(null, true);
+    this.procedures = new Map();
+    this.steps = 0;
+    this.currentLoc = null;
+    this.outputEntries = [];
+    this.events = [];
+    this.callStack = [];
+    this.robot = normalizeRobot(options.robot);
+    this.robotTrace = this.robot
+      ? [
+          {
+            action: 'START',
+            success: true,
+            row: this.robot.row,
+            column: this.robot.column,
+            direction: this.robot.direction,
+            state: publicRobot(this.robot),
+            loc: null,
+          },
+        ]
+      : [];
+    this.snapshots = [];
+    this.captureSnapshots = Boolean(options.captureSnapshots);
+    this.maxSnapshots = options.maxSnapshots ?? 1_000;
+    for (const statement of program.body) {
+      if (statement.type === 'ProcedureDecl') this.procedures.set(statement.name, statement);
+    }
+  }
+
+  fail(code, message, nodeOrLoc, extras = {}) {
+    const loc = nodeOrLoc?.loc ?? nodeOrLoc ?? this.currentLoc;
+    throw languageError('runtime', code, message, loc, {
+      ...extras,
+      callStack: this.callStack,
+    });
+  }
+
+  *tick(node, kind = 'node') {
+    this.currentLoc = copyLoc(node?.loc ?? node ?? this.currentLoc);
+    if (this.steps >= this.stepLimit) {
+      this.fail(
+        'STEP_LIMIT',
+        `Execution stopped after ${this.stepLimit} steps; the program may contain an infinite loop.`,
+        node,
+        { details: { stepLimit: this.stepLimit, kind } },
+      );
+    }
+    this.steps += 1;
+    yield { type: 'step', step: this.steps, kind, loc: copyLoc(this.currentLoc) };
+  }
+
+  recordEvent(event) {
+    this.events.push(cloneForPublic(event));
+  }
+
+  capture(node) {
+    if (!this.captureSnapshots || this.snapshots.length >= this.maxSnapshots) return;
+    this.snapshots.push({
+      step: this.steps,
+      loc: copyLoc(node?.loc),
+      globals: cloneForPublic(this.global.values),
+      robot: publicRobot(this.robot),
+      output: this.outputEntries.join(''),
+    });
+  }
+
+  expectBoolean(value, node, context = 'condition') {
+    if (typeof value !== 'boolean') {
+      this.fail(
+        'EXPECTED_BOOLEAN',
+        `The ${context} must evaluate to true or false.`,
+        node,
+        { details: { receivedType: describeType(value) } },
+      );
+    }
+    return value;
+  }
+
+  expectNumber(value, node, context = 'value') {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      this.fail('EXPECTED_NUMBER', `The ${context} must be a finite number.`, node, {
+        details: { receivedType: describeType(value) },
+      });
+    }
+    return value;
+  }
+
+  expectList(value, node, context = 'value') {
+    if (!Array.isArray(value)) {
+      this.fail('EXPECTED_LIST', `The ${context} must be a list.`, node, {
+        details: { receivedType: describeType(value) },
+      });
+    }
+    return value;
+  }
+
+  expectIndex(index, list, node, operation = 'list access', insert = false) {
+    if (!Number.isSafeInteger(index)) {
+      this.fail('INVALID_LIST_INDEX', `The index for ${operation} must be an integer.`, node, {
+        hint: 'AP CSP list indexes begin at 1.',
+        details: { index, length: list.length },
+      });
+    }
+    // College Board's INSERT rule is deliberately strict: the index must name
+    // an existing element, even for an empty list. APPEND is the add-at-end API.
+    if (index < 1 || index > list.length) {
+      this.fail(
+        'INVALID_LIST_INDEX',
+        `Index ${index} is outside the valid range 1 through ${list.length}.`,
+        node,
+        {
+          hint: insert
+            ? 'INSERT requires an existing index; use APPEND to add at the end.'
+            : 'AP CSP lists are 1-indexed.',
+          details: { index, length: list.length, operation },
+        },
+      );
+    }
+    return index - 1;
+  }
+
+  snapshot() {
+    return {
+      globals: cloneForPublic(this.global.values),
+      inputConsumed: this.inputCount,
+      inputRemaining: cloneForPublic(this.inputQueue.slice(this.inputIndex)),
+      robot: publicRobot(this.robot),
+      robotTrace: cloneForPublic(this.robotTrace),
+      steps: this.steps,
+      output: this.outputEntries.join(''),
+      outputEntries: [...this.outputEntries],
+      events: cloneForPublic(this.events),
+      snapshots: cloneForPublic(this.snapshots),
+    };
+  }
+
+  *executeProgram() {
+    for (const statement of this.program.body) {
+      if (statement.type === 'ProcedureDecl') continue;
+      const completion = yield* this.executeStatement(statement, this.global);
+      if (completion instanceof ReturnCompletion) {
+        this.fail('RETURN_OUTSIDE_PROCEDURE', 'RETURN can only appear inside a procedure.', statement);
+      }
+    }
+  }
+
+  *executeBlock(statements, environment) {
+    for (const statement of statements) {
+      const completion = yield* this.executeStatement(statement, environment);
+      if (completion instanceof ReturnCompletion) return completion;
+    }
+    return null;
+  }
+
+  *executeStatement(statement, environment) {
+    yield* this.tick(statement, 'statement');
+    let completion = null;
+    switch (statement.type) {
+      case 'AssignStmt': {
+        const value = yield* this.evaluate(statement.value, environment);
+        if (value === VOID) {
+          this.fail(
+            'VOID_VALUE',
+            'A procedure that does not RETURN a value cannot be assigned.',
+            statement.value,
+          );
+        }
+        if (statement.target.type === 'VariableExpr') {
+          environment.assign(statement.target.name, cloneLanguageValue(value));
+        } else {
+          const list = yield* this.evaluate(statement.target.list, environment);
+          this.expectList(list, statement.target.list, 'assignment target');
+          const index = yield* this.evaluate(statement.target.index, environment);
+          const offset = this.expectIndex(index, list, statement.target.index, 'list assignment');
+          list[offset] = cloneLanguageValue(value);
+        }
+        break;
+      }
+      case 'ExpressionStmt':
+        yield* this.evaluate(statement.expression, environment);
+        break;
+      case 'IfStmt': {
+        const condition = yield* this.evaluate(statement.condition, environment);
+        this.expectBoolean(condition, statement.condition, 'IF condition');
+        completion = yield* this.executeBlock(
+          condition ? statement.consequent : statement.alternate ?? [],
+          environment,
+        );
+        break;
+      }
+      case 'RepeatTimesStmt': {
+        const count = yield* this.evaluate(statement.count, environment);
+        if (!Number.isSafeInteger(count) || count < 0) {
+          this.fail(
+            'INVALID_REPEAT_COUNT',
+            'REPEAT TIMES requires a nonnegative integer count.',
+            statement.count,
+            { details: { count } },
+          );
+        }
+        for (let iteration = 0; iteration < count; iteration += 1) {
+          yield* this.tick(statement, 'loop-iteration');
+          completion = yield* this.executeBlock(statement.body, environment);
+          if (completion instanceof ReturnCompletion) break;
+        }
+        break;
+      }
+      case 'RepeatUntilStmt': {
+        for (;;) {
+          const condition = yield* this.evaluate(statement.condition, environment);
+          this.expectBoolean(condition, statement.condition, 'REPEAT UNTIL condition');
+          if (condition) break;
+          yield* this.tick(statement, 'loop-iteration');
+          completion = yield* this.executeBlock(statement.body, environment);
+          if (completion instanceof ReturnCompletion) break;
+        }
+        break;
+      }
+      case 'ForEachStmt': {
+        const source = yield* this.evaluate(statement.iterable, environment);
+        this.expectList(source, statement.iterable, 'FOR EACH source');
+        const values = cloneLanguageValue(source);
+        for (const value of values) {
+          yield* this.tick(statement, 'loop-iteration');
+          environment.assign(statement.item, cloneLanguageValue(value));
+          completion = yield* this.executeBlock(statement.body, environment);
+          if (completion instanceof ReturnCompletion) break;
+        }
+        break;
+      }
+      case 'ReturnStmt': {
+        const value = yield* this.evaluate(statement.value, environment);
+        if (value === VOID) {
+          this.fail('VOID_VALUE', 'RETURN requires a value.', statement.value);
+        }
+        completion = new ReturnCompletion(cloneLanguageValue(value));
+        break;
+      }
+      case 'ProcedureDecl':
+        break;
+      default:
+        this.fail('UNKNOWN_STATEMENT', `Unknown statement ${statement.type}.`, statement);
+    }
+    this.capture(statement);
+    return completion;
+  }
+
+  *evaluate(expression, environment) {
+    yield* this.tick(expression, 'expression');
+    switch (expression.type) {
+      case 'LiteralExpr':
+        return expression.value;
+      case 'DirectionExpr':
+        return freezeShallow({ __apDirection: expression.value });
+      case 'ListExpr': {
+        const list = [];
+        for (const element of expression.elements) {
+          const value = yield* this.evaluate(element, environment);
+          if (value === VOID) this.fail('VOID_VALUE', 'A list element must have a value.', element);
+          list.push(cloneLanguageValue(value));
+        }
+        return list;
+      }
+      case 'VariableExpr': {
+        if (CALLABLE_KEYWORDS.has(expression.name)) return freezeShallow({ __builtin: expression.name });
+        if (!environment.contains(expression.name)) {
+          this.fail(
+            'UNDEFINED_VARIABLE',
+            `Variable ${expression.name} has not been assigned.`,
+            expression,
+          );
+        }
+        return environment.get(expression.name);
+      }
+      case 'IndexExpr': {
+        const list = yield* this.evaluate(expression.list, environment);
+        this.expectList(list, expression.list, 'indexed value');
+        const index = yield* this.evaluate(expression.index, environment);
+        const offset = this.expectIndex(index, list, expression.index, 'list access');
+        return list[offset];
+      }
+      case 'UnaryExpr': {
+        const value = yield* this.evaluate(expression.operand, environment);
+        if (expression.operator === 'NOT') {
+          return !this.expectBoolean(value, expression.operand, 'NOT operand');
+        }
+        const number = this.expectNumber(value, expression.operand, 'unary operand');
+        const result = expression.operator === 'MINUS' ? -number : number;
+        if (!Number.isFinite(result)) this.fail('NUMERIC_OVERFLOW', 'Numeric result is not finite.', expression);
+        return result;
+      }
+      case 'LogicalExpr': {
+        const left = yield* this.evaluate(expression.left, environment);
+        this.expectBoolean(left, expression.left, `${expression.operator} left operand`);
+        if (expression.operator === 'AND' && !left) return false;
+        if (expression.operator === 'OR' && left) return true;
+        const right = yield* this.evaluate(expression.right, environment);
+        this.expectBoolean(right, expression.right, `${expression.operator} right operand`);
+        return expression.operator === 'AND' ? left && right : left || right;
+      }
+      case 'BinaryExpr': {
+        const left = yield* this.evaluate(expression.left, environment);
+        const right = yield* this.evaluate(expression.right, environment);
+        return this.evaluateBinary(expression, left, right);
+      }
+      case 'CallExpr':
+        return yield* this.evaluateCall(expression, environment);
+      default:
+        this.fail('UNKNOWN_EXPRESSION', `Unknown expression ${expression.type}.`, expression);
+    }
+  }
+
+  evaluateBinary(expression, left, right) {
+    switch (expression.operator) {
+      case 'EQ':
+        return valuesEqual(left, right);
+      case 'NEQ':
+        return !valuesEqual(left, right);
+      case 'GT':
+      case 'GTE':
+      case 'LT':
+      case 'LTE': {
+        this.expectNumber(left, expression.left, 'left comparison operand');
+        this.expectNumber(right, expression.right, 'right comparison operand');
+        if (expression.operator === 'GT') return left > right;
+        if (expression.operator === 'GTE') return left >= right;
+        if (expression.operator === 'LT') return left < right;
+        return left <= right;
+      }
+      case 'PLUS':
+      case 'MINUS':
+      case 'STAR':
+      case 'SLASH':
+      case 'MOD': {
+        this.expectNumber(left, expression.left, 'left arithmetic operand');
+        this.expectNumber(right, expression.right, 'right arithmetic operand');
+        let result;
+        if (expression.operator === 'PLUS') result = left + right;
+        else if (expression.operator === 'MINUS') result = left - right;
+        else if (expression.operator === 'STAR') result = left * right;
+        else if (expression.operator === 'SLASH') {
+          if (right === 0) this.fail('DIVISION_BY_ZERO', 'Division by zero is not allowed.', expression.right);
+          result = left / right;
+        } else {
+          if (!Number.isSafeInteger(left) || left < 0 || !Number.isSafeInteger(right) || right <= 0) {
+            this.fail(
+              'INVALID_MOD_OPERANDS',
+              'For a MOD b, a must be a nonnegative integer and b must be a positive integer.',
+              expression,
+              { details: { a: left, b: right } },
+            );
+          }
+          result = left % right;
+        }
+        if (!Number.isFinite(result)) {
+          this.fail('NUMERIC_OVERFLOW', 'Numeric result is outside the finite range.', expression);
+        }
+        return result;
+      }
+      default:
+        this.fail('UNKNOWN_OPERATOR', `Unknown operator ${expression.operator}.`, expression);
+    }
+  }
+
+  *evaluateCall(call, environment) {
+    if (call.callee.type !== 'VariableExpr') {
+      this.fail('NOT_CALLABLE', 'Only a named procedure or built-in can be called.', call.callee);
+    }
+    const name = call.callee.name;
+    if (BUILTIN_NAMES.has(name)) return yield* this.callBuiltin(name, call, environment);
+    const declaration = this.procedures.get(name);
+    if (!declaration) {
+      this.fail('UNDEFINED_PROCEDURE', `PROCEDURE ${name} is not defined.`, call.callee);
+    }
+    if (call.args.length !== declaration.params.length) {
+      this.fail(
+        'ARITY_MISMATCH',
+        `${name} expects ${declaration.params.length} argument(s), but ${call.args.length} were supplied.`,
+        call,
+        { details: { expected: declaration.params.length, actual: call.args.length } },
+      );
+    }
+    if (this.callStack.length >= this.maxCallDepth) {
+      this.fail(
+        'CALL_DEPTH_LIMIT',
+        `Procedure call depth exceeded ${this.maxCallDepth}.`,
+        call,
+        { details: { maxCallDepth: this.maxCallDepth } },
+      );
+    }
+    const values = [];
+    for (const argument of call.args) {
+      const value = yield* this.evaluate(argument, environment);
+      if (value === VOID) this.fail('VOID_VALUE', 'Procedure arguments must have values.', argument);
+      values.push(cloneLanguageValue(value));
+    }
+    const local = new Environment(this.global, false);
+    declaration.params.forEach((parameter, index) => {
+      local.define(parameter.name, cloneLanguageValue(values[index]));
+    });
+    const frame = {
+      name,
+      callLoc: copyLoc(call.loc),
+      definitionLoc: copyLoc(declaration.loc),
+    };
+    this.callStack.push(frame);
+    try {
+      const completion = yield* this.executeBlock(declaration.body, local);
+      return completion instanceof ReturnCompletion
+        ? cloneLanguageValue(completion.value)
+        : VOID;
+    } finally {
+      this.callStack.pop();
+    }
+  }
+
+  checkArity(name, call, expected) {
+    if (call.args.length !== expected) {
+      this.fail(
+        'ARITY_MISMATCH',
+        `${name} expects ${expected} argument(s), but ${call.args.length} were supplied.`,
+        call,
+        { details: { expected, actual: call.args.length } },
+      );
+    }
+  }
+
+  *evaluateArgs(call, environment) {
+    const values = [];
+    for (const argument of call.args) values.push(yield* this.evaluate(argument, environment));
+    return values;
+  }
+
+  *callBuiltin(name, call, environment) {
+    switch (name) {
+      case 'DISPLAY': {
+        this.checkArity(name, call, 1);
+        const [value] = yield* this.evaluateArgs(call, environment);
+        if (value === VOID) {
+          this.fail('VOID_VALUE', 'DISPLAY requires an expression with a value.', call.args[0]);
+        }
+        let text;
+        try {
+          text = renderValue(value);
+        } catch {
+          this.fail('VOID_VALUE', 'DISPLAY requires an expression with a value.', call.args[0]);
+        }
+        const chunk = `${text} `;
+        this.outputEntries.push(chunk);
+        this.recordEvent({
+          type: 'display',
+          text,
+          chunk,
+          value: cloneForPublic(value),
+          loc: copyLoc(call.loc),
+        });
+        return VOID;
+      }
+      case 'INPUT': {
+        this.checkArity(name, call, 0);
+        let value;
+        let queueIndex = null;
+        let source = 'provider';
+        if (this.inputIndex < this.inputQueue.length) {
+          queueIndex = this.inputIndex;
+          value = this.inputQueue[this.inputIndex++];
+          source = 'queue';
+        } else {
+          this.inputRequestCount += 1;
+          value = yield {
+            type: 'input-request',
+            requestId: this.inputRequestCount,
+            inputNumber: this.inputCount + 1,
+            loc: copyLoc(call.loc),
+          };
+        }
+        if (!isLanguageValue(value)) {
+          this.fail(
+            'INVALID_INPUT_VALUE',
+            'The supplied input is not a supported AP CSP value.',
+            call,
+            { details: { queueIndex, source } },
+          );
+        }
+        this.inputCount += 1;
+        this.recordEvent({
+          type: 'input',
+          value: cloneForPublic(value),
+          queueIndex,
+          source,
+          loc: copyLoc(call.loc),
+        });
+        return cloneLanguageValue(value);
+      }
+      case 'RANDOM': {
+        this.checkArity(name, call, 2);
+        const [a, b] = yield* this.evaluateArgs(call, environment);
+        if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || a > b) {
+          this.fail(
+            'INVALID_RANDOM_RANGE',
+            'RANDOM(a, b) requires safe integers with a less than or equal to b.',
+            call,
+            { details: { a, b } },
+          );
+        }
+        const width = b - a + 1;
+        if (!Number.isSafeInteger(width) || width < 1) {
+          this.fail('INVALID_RANDOM_RANGE', 'The RANDOM range is too large.', call);
+        }
+        const sample = this.rng();
+        if (typeof sample !== 'number' || !Number.isFinite(sample) || sample < 0 || sample >= 1) {
+          this.fail(
+            'INVALID_RNG_RESULT',
+            'The injected rng must return a finite number from 0 (inclusive) to 1 (exclusive).',
+            call,
+            { details: { sample } },
+          );
+        }
+        return a + Math.floor(sample * width);
+      }
+      case 'LENGTH': {
+        this.checkArity(name, call, 1);
+        const [list] = yield* this.evaluateArgs(call, environment);
+        return this.expectList(list, call.args[0], 'LENGTH argument').length;
+      }
+      case 'INSERT': {
+        this.checkArity(name, call, 3);
+        const [list, index, value] = yield* this.evaluateArgs(call, environment);
+        this.expectList(list, call.args[0], 'INSERT list');
+        if (value === VOID) this.fail('VOID_VALUE', 'INSERT requires a value.', call.args[2]);
+        const offset = this.expectIndex(index, list, call.args[1], 'INSERT', true);
+        list.splice(offset, 0, cloneLanguageValue(value));
+        return VOID;
+      }
+      case 'APPEND': {
+        this.checkArity(name, call, 2);
+        const [list, value] = yield* this.evaluateArgs(call, environment);
+        this.expectList(list, call.args[0], 'APPEND list');
+        if (value === VOID) this.fail('VOID_VALUE', 'APPEND requires a value.', call.args[1]);
+        list.push(cloneLanguageValue(value));
+        return VOID;
+      }
+      case 'REMOVE': {
+        this.checkArity(name, call, 2);
+        const [list, index] = yield* this.evaluateArgs(call, environment);
+        this.expectList(list, call.args[0], 'REMOVE list');
+        const offset = this.expectIndex(index, list, call.args[1], 'REMOVE');
+        list.splice(offset, 1);
+        return VOID;
+      }
+      case 'MOVE_FORWARD':
+        this.checkArity(name, call, 0);
+        this.requireRobot(call);
+        this.moveRobot(call);
+        return VOID;
+      case 'ROTATE_LEFT':
+        this.checkArity(name, call, 0);
+        this.requireRobot(call);
+        this.rotateRobot(-1, name, call);
+        return VOID;
+      case 'ROTATE_RIGHT':
+        this.checkArity(name, call, 0);
+        this.requireRobot(call);
+        this.rotateRobot(1, name, call);
+        return VOID;
+      case 'CAN_MOVE': {
+        this.checkArity(name, call, 1);
+        this.requireRobot(call);
+        const [direction] = yield* this.evaluateArgs(call, environment);
+        if (!direction || typeof direction !== 'object' || !direction.__apDirection) {
+          this.fail(
+            'INVALID_ROBOT_RELATIVE_DIRECTION',
+            'CAN_MOVE requires one unquoted direction: forward, backward, left, or right.',
+            call.args[0],
+          );
+        }
+        const canMove = this.canRobotMove(direction.__apDirection);
+        const event = {
+          action: 'CAN_MOVE',
+          relativeDirection: direction.__apDirection,
+          success: canMove,
+          row: this.robot.row,
+          column: this.robot.column,
+          direction: this.robot.direction,
+          state: publicRobot(this.robot),
+          loc: copyLoc(call.loc),
+        };
+        this.robotTrace.push(event);
+        this.recordEvent({ type: 'robot', ...event });
+        return canMove;
+      }
+      default:
+        this.fail('UNKNOWN_BUILTIN', `Unknown built-in ${name}.`, call);
+    }
+  }
+
+  requireRobot(call) {
+    if (!this.robot) {
+      this.fail(
+        'ROBOT_NOT_CONFIGURED',
+        'This program uses robot commands, but no robot grid was configured.',
+        call,
+      );
+    }
+  }
+
+  absoluteDirection(relativeDirection) {
+    const current = CARDINALS.indexOf(this.robot.direction);
+    return CARDINALS[(current + RELATIVE_TURNS[relativeDirection] + 4) % 4];
+  }
+
+  robotTarget(relativeDirection) {
+    const direction = this.absoluteDirection(relativeDirection);
+    const [rowDelta, columnDelta] = DELTAS[direction];
+    return {
+      row: this.robot.row + rowDelta,
+      column: this.robot.column + columnDelta,
+      direction,
+    };
+  }
+
+  canRobotMove(relativeDirection) {
+    const target = this.robotTarget(relativeDirection);
+    return (
+      target.row >= 1 &&
+      target.row <= this.robot.rows &&
+      target.column >= 1 &&
+      target.column <= this.robot.columns &&
+      !this.robot.blocked.has(`${target.row},${target.column}`)
+    );
+  }
+
+  moveRobot(call) {
+    const before = publicRobot(this.robot);
+    const target = this.robotTarget('forward');
+    if (!this.canRobotMove('forward')) {
+      const event = {
+        action: 'MOVE_FORWARD',
+        success: false,
+        row: this.robot.row,
+        column: this.robot.column,
+        direction: this.robot.direction,
+        before,
+        after: publicRobot(this.robot),
+        attempted: { row: target.row, column: target.column },
+        loc: copyLoc(call.loc),
+      };
+      this.robotTrace.push(event);
+      this.recordEvent({ type: 'robot', ...event });
+      this.fail(
+        'INVALID_ROBOT_MOVE',
+        'MOVE_FORWARD would leave the grid or enter a blocked cell.',
+        call,
+        { details: { attempted: event.attempted } },
+      );
+    }
+    this.robot.row = target.row;
+    this.robot.column = target.column;
+    const event = {
+      action: 'MOVE_FORWARD',
+      success: true,
+      row: this.robot.row,
+      column: this.robot.column,
+      direction: this.robot.direction,
+      before,
+      after: publicRobot(this.robot),
+      loc: copyLoc(call.loc),
+    };
+    this.robotTrace.push(event);
+    this.recordEvent({ type: 'robot', ...event });
+  }
+
+  rotateRobot(amount, action, call) {
+    const before = publicRobot(this.robot);
+    const index = CARDINALS.indexOf(this.robot.direction);
+    this.robot.direction = CARDINALS[(index + amount + 4) % 4];
+    const event = {
+      action,
+      success: true,
+      row: this.robot.row,
+      column: this.robot.column,
+      direction: this.robot.direction,
+      before,
+      after: publicRobot(this.robot),
+      loc: copyLoc(call.loc),
+    };
+    this.robotTrace.push(event);
+    this.recordEvent({ type: 'robot', ...event });
+  }
+}
+
+function describeType(value) {
+  if (value === VOID) return 'no value';
+  if (Array.isArray(value)) return 'list';
+  return typeof value;
+}
+
+function valuesEqual(left, right, seen = new Map()) {
+  if (typeof left !== typeof right) return false;
+  if (Array.isArray(left) !== Array.isArray(right)) return false;
+  if (!Array.isArray(left)) return Object.is(left, right) || left === right;
+  if (left.length !== right.length) return false;
+  if (seen.get(left) === right) return true;
+  seen.set(left, right);
+  for (let index = 0; index < left.length; index += 1) {
+    if (!valuesEqual(left[index], right[index], seen)) return false;
+  }
+  return true;
+}
+
+function isLanguageValue(value, seen = new Set()) {
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value === 'string' || typeof value === 'boolean') return true;
+  if (!Array.isArray(value)) return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  const valid = value.every((item) => isLanguageValue(item, seen));
+  seen.delete(value);
+  return valid;
+}
+
+function normalizeError(error, runtime = null) {
+  if (error instanceof APCSPError) return error;
+  return languageError(
+    'internal',
+    'INTERNAL_ERROR',
+    'The interpreter encountered an unexpected internal error.',
+    runtime?.currentLoc ?? null,
+    { details: { originalMessage: String(error?.message ?? error) }, cause: error },
+  );
+}
+
+function waitForProvider(valueOrPromise, signal) {
+  if (!signal) return Promise.resolve(valueOrPromise);
+  if (signal.aborted) {
+    return Promise.reject(languageError('runtime', 'ABORTED', 'Execution was stopped.', null));
+  }
+  return new Promise((resolve, reject) => {
+    const abort = () => {
+      cleanup();
+      reject(languageError('runtime', 'ABORTED', 'Execution was stopped.', null));
+    };
+    const cleanup = () => signal.removeEventListener('abort', abort);
+    signal.addEventListener('abort', abort, { once: true });
+    Promise.resolve(valueOrPromise).then(
+      (value) => {
+        cleanup();
+        resolve(value);
+      },
+      (error) => {
+        cleanup();
+        reject(error);
+      },
+    );
+  });
+}
+
+class Execution {
+  constructor(sourceOrAst, options = {}) {
+    this.options = { ...options };
+    this.error = null;
+    this.done = false;
+    this.runtime = null;
+    this.program = null;
+    this.iterator = null;
+    this.eventCursor = 0;
+    this.waitingForInput = null;
+    this.resumeValue = NO_RESUME_VALUE;
+    try {
+      this.program =
+        typeof sourceOrAst === 'string' ? parseProgram(sourceOrAst) : sourceOrAst;
+      if (!this.program || this.program.type !== 'Program') {
+        throw languageError(
+          'configuration',
+          'INVALID_AST',
+          'Execution requires source text or a Program AST.',
+          null,
+        );
+      }
+      // Validate caller-supplied ASTs too.
+      validateProgram(this.program);
+      this.runtime = new Runtime(this.program, this.options);
+      this.iterator = this.runtime.executeProgram();
+    } catch (error) {
+      this.error = normalizeError(error, this.runtime);
+      this.done = true;
+    }
+  }
+
+  abort(message = 'Execution was stopped.') {
+    if (this.done) return;
+    this.error = languageError(
+      'runtime',
+      'ABORTED',
+      message,
+      this.runtime?.currentLoc ?? null,
+      { callStack: this.runtime?.callStack ?? [] },
+    );
+    try {
+      this.iterator?.return();
+    } catch {
+      // The structured ABORTED result remains authoritative.
+    }
+    this.done = true;
+    this.waitingForInput = null;
+  }
+
+  provideInput(value) {
+    if (!this.waitingForInput) {
+      throw languageError(
+        'runtime',
+        'INPUT_NOT_REQUESTED',
+        'The program is not currently waiting for INPUT().',
+        this.runtime?.currentLoc ?? null,
+      );
+    }
+    if (!isLanguageValue(value)) {
+      throw languageError(
+        'runtime',
+        'INVALID_INPUT_VALUE',
+        'The supplied input is not a supported AP CSP value.',
+        this.waitingForInput.loc,
+      );
+    }
+    this.resumeValue = cloneLanguageValue(value);
+    this.waitingForInput = null;
+    return this;
+  }
+
+  step(maxSteps = 1) {
+    if (!Number.isSafeInteger(maxSteps) || maxSteps < 1) {
+      throw languageError(
+        'configuration',
+        'INVALID_CHUNK_SIZE',
+        'step() requires a positive integer.',
+        null,
+      );
+    }
+    const startedAtEvent = this.runtime?.events.length ?? 0;
+    let checkpoints = 0;
+    while (!this.done && !this.waitingForInput && checkpoints < maxSteps) {
+      try {
+        const next =
+          this.resumeValue === NO_RESUME_VALUE
+            ? this.iterator.next()
+            : this.iterator.next(this.takeResumeValue());
+        if (next.done) {
+          this.done = true;
+          break;
+        }
+        if (next.value?.type === 'input-request') {
+          this.waitingForInput = cloneForPublic(next.value);
+          break;
+        }
+        checkpoints += 1;
+      } catch (error) {
+        this.error = normalizeError(error, this.runtime);
+        this.done = true;
+      }
+    }
+    const events = this.runtime
+      ? cloneForPublic(this.runtime.events.slice(startedAtEvent))
+      : [];
+    this.eventCursor = this.runtime?.events.length ?? 0;
+    return {
+      done: this.done,
+      waitingForInput: cloneForPublic(this.waitingForInput),
+      steps: this.runtime?.steps ?? 0,
+      events,
+      result: this.done ? this.getResult() : null,
+    };
+  }
+
+  takeResumeValue() {
+    const value = this.resumeValue;
+    this.resumeValue = NO_RESUME_VALUE;
+    return value;
+  }
+
+  run() {
+    while (!this.done) {
+      this.step(10_000);
+      if (!this.waitingForInput) continue;
+      const provider = this.options.inputProvider;
+      if (typeof provider !== 'function') break;
+      let value;
+      try {
+        value = provider(cloneForPublic(this.waitingForInput));
+      } catch (error) {
+        this.error = languageError(
+          'runtime',
+          'INPUT_PROVIDER_ERROR',
+          'The input provider failed.',
+          this.waitingForInput.loc,
+          { details: { originalMessage: String(error?.message ?? error) }, cause: error },
+        );
+        this.done = true;
+        this.waitingForInput = null;
+        break;
+      }
+      if (value && typeof value.then === 'function') {
+        this.error = languageError(
+          'configuration',
+          'ASYNC_INPUT_PROVIDER_IN_SYNC_RUN',
+          'runProgram cannot use an asynchronous inputProvider; use runProgramAsync.',
+          this.waitingForInput.loc,
+        );
+        this.done = true;
+        this.waitingForInput = null;
+        break;
+      }
+      try {
+        this.provideInput(value);
+      } catch (error) {
+        this.error = normalizeError(error, this.runtime);
+        this.done = true;
+        this.waitingForInput = null;
+        break;
+      }
+    }
+    const result = this.getResult();
+    if (!result.ok && this.options.throwOnError && this.error) {
+      const error = this.error;
+      error.partialResult = result;
+      throw error;
+    }
+    return result;
+  }
+
+  async runAsync({
+    chunkSize = this.options.chunkSize ?? DEFAULT_CHUNK_SIZE,
+    signal = this.options.signal,
+    shouldAbort = this.options.shouldAbort,
+    inputProvider = this.options.inputProvider,
+  } = {}) {
+    if (!Number.isSafeInteger(chunkSize) || chunkSize < 1) {
+      throw languageError(
+        'configuration',
+        'INVALID_CHUNK_SIZE',
+        'chunkSize must be a positive safe integer.',
+        null,
+      );
+    }
+    while (!this.done) {
+      if (signal?.aborted || (typeof shouldAbort === 'function' && (await shouldAbort()))) {
+        this.abort();
+        break;
+      }
+      this.step(chunkSize);
+      if (this.waitingForInput) {
+        if (typeof inputProvider !== 'function') break;
+        try {
+          const value = await waitForProvider(
+            inputProvider(cloneForPublic(this.waitingForInput), { signal }),
+            signal,
+          );
+          if (signal?.aborted) {
+            this.abort();
+            break;
+          }
+          this.provideInput(value);
+        } catch (error) {
+          if (signal?.aborted || error?.code === 'ABORTED' || error?.name === 'AbortError') {
+            this.abort();
+          } else if (error instanceof APCSPError) {
+            this.error = error;
+            this.done = true;
+            this.waitingForInput = null;
+          } else {
+            this.error = languageError(
+              'runtime',
+              'INPUT_PROVIDER_ERROR',
+              'The input provider failed.',
+              this.waitingForInput?.loc ?? this.runtime?.currentLoc ?? null,
+              { details: { originalMessage: String(error?.message ?? error) }, cause: error },
+            );
+            this.done = true;
+            this.waitingForInput = null;
+          }
+          break;
+        }
+      }
+      if (!this.done) await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    const result = this.getResult();
+    if (!result.ok && this.options.throwOnError && this.error) {
+      const error = this.error;
+      error.partialResult = result;
+      throw error;
+    }
+    return result;
+  }
+
+  snapshot() {
+    return this.runtime
+      ? this.runtime.snapshot()
+      : {
+          globals: {},
+          inputConsumed: 0,
+          inputRemaining: [],
+          robot: null,
+          robotTrace: [],
+          steps: 0,
+          output: '',
+          outputEntries: [],
+          events: [],
+          snapshots: [],
+        };
+  }
+
+  getResult() {
+    const state = this.snapshot();
+    const pendingInputError = this.waitingForInput
+      ? languageError(
+          'runtime',
+          'INPUT_REQUIRED',
+          'The program is paused waiting for an INPUT() value.',
+          this.waitingForInput.loc,
+          {
+            hint: 'Call provideInput(value) on the Execution, or pass inputProvider to runProgramAsync.',
+            details: {
+              requestId: this.waitingForInput.requestId,
+              inputNumber: this.waitingForInput.inputNumber,
+            },
+          },
+        )
+      : null;
+    const error = (this.error ?? pendingInputError)?.toJSON() ?? null;
+    return {
+      ok: this.done && !error,
+      status: this.waitingForInput ? 'input-required' : this.done ? (error ? 'error' : 'completed') : 'running',
+      inputRequest: cloneForPublic(this.waitingForInput),
+      output: state.output,
+      outputEntries: [...state.outputEntries],
+      events: cloneForPublic(state.events),
+      globals: cloneForPublic(state.globals),
+      state: {
+        globals: cloneForPublic(state.globals),
+        inputConsumed: state.inputConsumed,
+        inputRemaining: cloneForPublic(state.inputRemaining),
+        robot: cloneForPublic(state.robot),
+        steps: state.steps,
+      },
+      robot: cloneForPublic(state.robot),
+      robotTrace: cloneForPublic(state.robotTrace),
+      snapshots: cloneForPublic(state.snapshots),
+      steps: state.steps,
+      inputConsumed: state.inputConsumed,
+      aliasesUsed: cloneForPublic(this.program?.aliasesUsed ?? []),
+      error,
+    };
+  }
+}
+
+/** Create a resumable execution. `step(n)` advances at most n AST checkpoints. */
+function createExecution(sourceOrAst, options = {}) {
+  return new Execution(sourceOrAst, options);
+}
+
+/** Run synchronously. Known language errors are returned as `{ok:false,error}`. */
+function runProgram(sourceOrAst, options = {}) {
+  return createExecution(sourceOrAst, options).run();
+}
+
+/**
+ * Run cooperatively, yielding to the event loop between chunks. AbortSignal and
+ * `shouldAbort` are checked at each boundary, which keeps a file:// UI stoppable.
+ */
+async function runProgramAsync(sourceOrAst, options = {}) {
+  const execution = createExecution(sourceOrAst, options);
+  return execution.runAsync({
+    chunkSize: options.chunkSize ?? DEFAULT_CHUNK_SIZE,
+    signal: options.signal,
+    shouldAbort: options.shouldAbort,
+  });
+}
+
+
+
+
+/**
+ * Runnable AP CSP text-notation examples.
+ *
+ * The source strings intentionally use the notation printed on the College
+ * Board Exam Reference Sheet: the assignment arrow, symbolic comparisons,
+ * uppercase procedure names, 1-based lists, and brace-delimited blocks.
+ */
+
+const EXAMPLES = Object.freeze([
+  Object.freeze({
+    id: "first-program",
+    name: "First program",
+    summary: "Total a list, make a decision, and call a display procedure.",
+    concepts: Object.freeze(["assignment", "list", "iteration", "selection", "procedure"]),
+    code: `numbers ← [3, 7, 2, 9, 4]
+total ← 0
+i ← 1
+
+REPEAT UNTIL(i > LENGTH(numbers)) {
+  total ← total + numbers[i]
+  i ← i + 1
+}
+
+DISPLAY("Total:")
+DISPLAY(total)
+DISPLAY("Count:")
+DISPLAY(LENGTH(numbers))
+
+IF(total > 20) {
+  DISPLAY("That is a big total!")
+} ELSE {
+  DISPLAY("That is a small total.")
+}
+
+showList(numbers)
+
+PROCEDURE showList(aList) {
+  DISPLAY("Numbers:")
+  FOR EACH item IN aList {
+    DISPLAY(item)
+  }
+}`,
+    inputQueue: Object.freeze([]),
+    robot: null,
+    expectedOutput: "Total: 25 Count: 5 That is a big total! Numbers: 3 7 2 9 4 ",
+  }),
+
+  Object.freeze({
+    id: "conditionals",
+    name: "Conditionals",
+    summary: "Read a score and choose exactly one message to display.",
+    concepts: Object.freeze(["INPUT", "comparison", "IF", "ELSE"]),
+    code: `score ← INPUT()
+
+IF(score ≥ 70)
+{
+  DISPLAY("On track")
+}
+ELSE
+{
+  DISPLAY("Keep practicing")
+}`,
+    inputQueue: Object.freeze([84]),
+    robot: null,
+    expectedOutput: "On track ",
+  }),
+
+  Object.freeze({
+    id: "loops",
+    name: "Loops",
+    summary: "Use both a counted loop and a pre-test repeat-until loop.",
+    concepts: Object.freeze(["REPEAT n TIMES", "REPEAT UNTIL", "iteration"]),
+    code: `total ← 0
+
+REPEAT 4 TIMES
+{
+  total ← total + 2
+}
+
+DISPLAY(total)
+
+countdown ← 3
+REPEAT UNTIL(countdown = 0)
+{
+  DISPLAY(countdown)
+  countdown ← countdown - 1
+}
+
+DISPLAY("Go!")`,
+    inputQueue: Object.freeze([]),
+    robot: null,
+    expectedOutput: "8 3 2 1 Go! ",
+  }),
+
+  Object.freeze({
+    id: "lists",
+    name: "Lists",
+    summary: "Append a score, traverse the list, and compute its average.",
+    concepts: Object.freeze(["list", "APPEND", "FOR EACH", "LENGTH"]),
+    code: `scores ← [88, 92, 79]
+APPEND(scores, 95)
+
+total ← 0
+FOR EACH score IN scores
+{
+  total ← total + score
+}
+
+average ← total / LENGTH(scores)
+DISPLAY(average)`,
+    inputQueue: Object.freeze([]),
+    robot: null,
+    expectedOutput: "88.5 ",
+  }),
+
+  Object.freeze({
+    id: "procedures",
+    name: "Procedures",
+    summary: "Define one value-returning procedure and one display procedure.",
+    concepts: Object.freeze(["PROCEDURE", "parameters", "RETURN", "procedure call"]),
+    code: `PROCEDURE larger(a, b)
+{
+  IF(a > b)
+  {
+    RETURN(a)
+  }
+  RETURN(b)
+}
+
+PROCEDURE announce(label, value)
+{
+  DISPLAY(label)
+  DISPLAY(value)
+}
+
+answer ← larger(42, 27)
+announce("Larger value:", answer)`,
+    inputQueue: Object.freeze([]),
+    robot: null,
+    expectedOutput: "Larger value: 42 ",
+  }),
+
+  Object.freeze({
+    id: "robot",
+    name: "Robot",
+    summary: "Sense a blocked square, turn, and continue along an open route.",
+    concepts: Object.freeze(["CAN_MOVE", "MOVE_FORWARD", "ROTATE_LEFT", "ROTATE_RIGHT"]),
+    code: `REPEAT 2 TIMES
+{
+  IF(CAN_MOVE(forward))
+  {
+    MOVE_FORWARD()
+  }
+  ELSE
+  {
+    ROTATE_RIGHT()
+  }
+}
+
+ROTATE_LEFT()
+IF(CAN_MOVE(forward))
+{
+  MOVE_FORWARD()
+}`,
+    inputQueue: Object.freeze([]),
+    robot: Object.freeze({
+      rows: 5,
+      columns: 5,
+      start: Object.freeze({ row: 4, column: 2, direction: "north" }),
+      blocked: Object.freeze([
+        Object.freeze({ row: 3, column: 2 }),
+      ]),
+    }),
+    expectedOutput: "",
+    expectedRobot: Object.freeze({ row: 3, column: 3, direction: "north" }),
+  }),
+]);
+
+function getExample(id) {
+  return EXAMPLES.find((example) => example.id === id) ?? null;
+}
+
+const examples = EXAMPLES;
+
+
+
+
+/**
+ * AP CSP reference data used by the runner's searchable reference panel.
+ *
+ * Official syntax and explanations are condensed from Appendix 1 of the
+ * current AP Computer Science Principles Course and Exam Description. Runner
+ * conveniences are intentionally exported in a separate collection below.
+ */
+
+const SOURCE_URLS = Object.freeze({
+  course: "https://apcentral.collegeboard.org/courses/ap-computer-science-principles",
+  exam: "https://apcentral.collegeboard.org/courses/ap-computer-science-principles/exam",
+  assessment: "https://apstudents.collegeboard.org/courses/ap-computer-science-principles/assessment",
+  examDates: "https://apstudents.collegeboard.org/exam-dates",
+  ced: "https://apcentral.collegeboard.org/media/pdf/ap-computer-science-principles-course-and-exam-description.pdf",
+  referenceInformation: "https://apcentral.collegeboard.org/exam-administration-ordering-scores/administering-exams/subject-specific/reference-information",
+});
+
+const COLLEGE_BOARD_SOURCES = Object.freeze([
+  Object.freeze({
+    id: "course",
+    label: "AP Computer Science Principles course",
+    url: SOURCE_URLS.course,
+  }),
+  Object.freeze({
+    id: "exam",
+    label: "AP Computer Science Principles exam",
+    url: SOURCE_URLS.exam,
+  }),
+  Object.freeze({
+    id: "assessment",
+    label: "AP Computer Science Principles assessment",
+    url: SOURCE_URLS.assessment,
+  }),
+  Object.freeze({
+    id: "exam-dates",
+    label: "2027 AP Exam Dates",
+    url: SOURCE_URLS.examDates,
+  }),
+  Object.freeze({
+    id: "ced",
+    label: "Course and Exam Description",
+    url: SOURCE_URLS.ced,
+    location: "Exam Reference Sheet, Appendix 1, printed pages 213–218",
+  }),
+  Object.freeze({
+    id: "reference-information",
+    label: "Reference Information for Specific AP Exams",
+    url: SOURCE_URLS.referenceInformation,
+  }),
+]);
+
+const CED_SOURCE = Object.freeze({
+  label: "AP CSP Course and Exam Description, Appendix 1",
+  url: SOURCE_URLS.ced,
+  pages: "213–218",
+});
+
+const REFERENCE_CATEGORIES = Object.freeze([
+  Object.freeze({
+    id: "basics",
+    name: "Basics",
+    description: "Assignment, input, output, arithmetic, and numeric procedures.",
+    searchTerms: Object.freeze([
+      "assignment", "variable", "display", "output", "input", "arithmetic",
+      "random", "mod", "remainder", "number",
+    ]),
+    source: CED_SOURCE,
+    entries: Object.freeze([
+      Object.freeze({
+        id: "assignment",
+        title: "Assignment",
+        syntax: "a ← expression",
+        explanation: "Evaluate expression, then assign a copy of its result to a.",
+        searchTerms: Object.freeze(["assign", "arrow", "copy", "store", "variable"]),
+      }),
+      Object.freeze({
+        id: "display",
+        title: "Display",
+        syntax: "DISPLAY(expression)",
+        explanation: "Display the value of expression followed by one space.",
+        searchTerms: Object.freeze(["display", "print", "output", "space"]),
+      }),
+      Object.freeze({
+        id: "input",
+        title: "Input",
+        syntax: "value ← INPUT()",
+        explanation: "Accept one value from the user and return that input value.",
+        searchTerms: Object.freeze(["input", "user", "read", "value"]),
+      }),
+      Object.freeze({
+        id: "arithmetic",
+        title: "Arithmetic",
+        syntax: "a + b\na - b\na * b\na / b",
+        explanation: "Perform arithmetic using mathematical order of operations. Division is real-number division; 17 / 5 is 3.4.",
+        searchTerms: Object.freeze(["add", "subtract", "multiply", "divide", "precedence"]),
+      }),
+      Object.freeze({
+        id: "mod",
+        title: "Remainder",
+        syntax: "a MOD b",
+        explanation: "Return the remainder for integer a ≥ 0 and integer b > 0. MOD has the same precedence as * and /.",
+        searchTerms: Object.freeze(["mod", "remainder", "integer", "divisible"]),
+      }),
+      Object.freeze({
+        id: "random",
+        title: "Random integer",
+        syntax: "RANDOM(a, b)",
+        explanation: "Return an equally likely integer from a through b, including both endpoints.",
+        searchTerms: Object.freeze(["random", "integer", "inclusive", "chance"]),
+      }),
+    ]),
+  }),
+
+  Object.freeze({
+    id: "logic",
+    name: "Logic",
+    description: "Relational tests and Boolean operators.",
+    searchTerms: Object.freeze([
+      "logic", "boolean", "true", "false", "comparison", "relational",
+      "not", "and", "or",
+    ]),
+    source: CED_SOURCE,
+    entries: Object.freeze([
+      Object.freeze({
+        id: "comparisons",
+        title: "Comparisons",
+        syntax: "a = b\na ≠ b\na > b\na < b\na ≥ b\na ≤ b",
+        explanation: "Test the relationship between two values. Every comparison evaluates to true or false.",
+        searchTerms: Object.freeze(["equal", "not equal", "greater", "less", "compare"]),
+      }),
+      Object.freeze({
+        id: "not",
+        title: "NOT",
+        syntax: "NOT condition",
+        explanation: "Evaluate to true when condition is false; otherwise evaluate to false.",
+        searchTerms: Object.freeze(["not", "negate", "opposite", "boolean"]),
+      }),
+      Object.freeze({
+        id: "and",
+        title: "AND",
+        syntax: "condition1 AND condition2",
+        explanation: "Evaluate to true only when both conditions are true.",
+        searchTerms: Object.freeze(["and", "both", "boolean"]),
+      }),
+      Object.freeze({
+        id: "or",
+        title: "OR",
+        syntax: "condition1 OR condition2",
+        explanation: "Evaluate to true when either or both conditions are true.",
+        searchTerms: Object.freeze(["or", "either", "inclusive", "boolean"]),
+      }),
+    ]),
+  }),
+
+  Object.freeze({
+    id: "selection",
+    name: "Selection",
+    description: "Choose which block of statements runs.",
+    searchTerms: Object.freeze(["selection", "if", "else", "condition", "branch"]),
+    source: CED_SOURCE,
+    entries: Object.freeze([
+      Object.freeze({
+        id: "if",
+        title: "IF",
+        syntax: "IF(condition)\n{\n  <block of statements>\n}",
+        explanation: "Execute the block when condition is true; take no action when it is false.",
+        searchTerms: Object.freeze(["if", "condition", "branch", "selection"]),
+      }),
+      Object.freeze({
+        id: "if-else",
+        title: "IF / ELSE",
+        syntax: "IF(condition)\n{\n  <first block>\n}\nELSE\n{\n  <second block>\n}",
+        explanation: "Execute the first block when condition is true; otherwise execute the second block.",
+        searchTerms: Object.freeze(["if", "else", "otherwise", "branch", "selection"]),
+      }),
+    ]),
+  }),
+
+  Object.freeze({
+    id: "iteration",
+    name: "Iteration",
+    description: "Repeat a block a fixed number of times or until a condition is true.",
+    searchTerms: Object.freeze(["iteration", "loop", "repeat", "times", "until"]),
+    source: CED_SOURCE,
+    entries: Object.freeze([
+      Object.freeze({
+        id: "repeat-times",
+        title: "REPEAT n TIMES",
+        syntax: "REPEAT n TIMES\n{\n  <block of statements>\n}",
+        explanation: "Execute the block exactly n times.",
+        searchTerms: Object.freeze(["repeat", "times", "counted loop", "iteration"]),
+      }),
+      Object.freeze({
+        id: "repeat-until",
+        title: "REPEAT UNTIL",
+        syntax: "REPEAT UNTIL(condition)\n{\n  <block of statements>\n}",
+        explanation: "Check condition before each iteration and repeat while it is false. An initially true condition runs the block zero times.",
+        searchTerms: Object.freeze(["repeat", "until", "pre-test", "condition", "loop"]),
+      }),
+    ]),
+  }),
+
+  Object.freeze({
+    id: "lists",
+    name: "Lists",
+    description: "Create, copy, index, mutate, measure, and traverse ordered values.",
+    searchTerms: Object.freeze([
+      "list", "array", "index", "insert", "append", "remove", "length",
+      "for each", "traverse", "copy",
+    ]),
+    source: CED_SOURCE,
+    note: "AP CSP list indices begin at 1. An index below 1 or above the current list length produces an error and terminates the program.",
+    entries: Object.freeze([
+      Object.freeze({
+        id: "list-create-copy",
+        title: "Create or copy a list",
+        syntax: "aList ← [value1, value2, value3]\naList ← []\naList ← bList",
+        explanation: "Create an ordered list, create an empty list, or assign an independent copy of bList.",
+        searchTerms: Object.freeze(["list", "literal", "empty", "copy", "create"]),
+      }),
+      Object.freeze({
+        id: "list-index",
+        title: "Read or replace an element",
+        syntax: "x ← aList[i]\naList[i] ← x",
+        explanation: "Access or replace the element at 1-based index i.",
+        searchTerms: Object.freeze(["index", "element", "read", "replace", "one based"]),
+      }),
+      Object.freeze({
+        id: "insert",
+        title: "INSERT",
+        syntax: "INSERT(aList, i, value)",
+        explanation: "Shift values at indices i and greater one place right, then place value at i. Under the reference sheet's universal index rule, i must be from 1 through the current length.",
+        searchTerms: Object.freeze(["insert", "shift right", "index", "add"]),
+      }),
+      Object.freeze({
+        id: "append",
+        title: "APPEND",
+        syntax: "APPEND(aList, value)",
+        explanation: "Increase the list length by one and place value at the end.",
+        searchTerms: Object.freeze(["append", "end", "add", "push"]),
+      }),
+      Object.freeze({
+        id: "remove",
+        title: "REMOVE",
+        syntax: "REMOVE(aList, i)",
+        explanation: "Remove the element at i and shift all later elements one place left.",
+        searchTerms: Object.freeze(["remove", "delete", "shift left", "index"]),
+      }),
+      Object.freeze({
+        id: "length",
+        title: "LENGTH",
+        syntax: "LENGTH(aList)",
+        explanation: "Return the number of elements currently in aList.",
+        searchTerms: Object.freeze(["length", "size", "count", "list"]),
+      }),
+      Object.freeze({
+        id: "for-each",
+        title: "FOR EACH",
+        syntax: "FOR EACH item IN aList\n{\n  <block of statements>\n}",
+        explanation: "Assign item each list value in order, from first to last, and execute the block once per value.",
+        searchTerms: Object.freeze(["for each", "traverse", "loop", "item", "list"]),
+      }),
+    ]),
+  }),
+
+  Object.freeze({
+    id: "procedures",
+    name: "Procedures",
+    description: "Name reusable blocks, pass arguments, and optionally return a value.",
+    searchTerms: Object.freeze([
+      "procedure", "function", "call", "parameter", "argument", "return",
+    ]),
+    source: CED_SOURCE,
+    entries: Object.freeze([
+      Object.freeze({
+        id: "procedure",
+        title: "Define and call a procedure",
+        syntax: "PROCEDURE procName(parameter1, parameter2)\n{\n  <block of statements>\n}\n\nprocName(arg1, arg2)",
+        explanation: "Define a procedure with zero or more parameters. A call assigns arguments to parameters in order and runs the block.",
+        searchTerms: Object.freeze(["procedure", "define", "call", "parameter", "argument"]),
+      }),
+      Object.freeze({
+        id: "return",
+        title: "Return a value",
+        syntax: "RETURN(expression)\n\nresult ← procName(arg1, arg2)",
+        explanation: "Immediately return expression and resume at the calling statement. RETURN may appear anywhere inside the procedure.",
+        searchTerms: Object.freeze(["return", "result", "value", "early return"]),
+      }),
+    ]),
+  }),
+
+  Object.freeze({
+    id: "robot",
+    name: "Robot",
+    description: "Move and turn on a supplied grid, or sense an adjacent square.",
+    searchTerms: Object.freeze([
+      "robot", "grid", "move", "forward", "rotate", "left", "right",
+      "backward", "open", "blocked",
+    ]),
+    source: CED_SOURCE,
+    entries: Object.freeze([
+      Object.freeze({
+        id: "robot-actions",
+        title: "Move and rotate",
+        syntax: "MOVE_FORWARD()\nROTATE_LEFT()\nROTATE_RIGHT()",
+        explanation: "Move one square in the facing direction, or rotate in place 90 degrees counterclockwise or clockwise.",
+        searchTerms: Object.freeze(["move forward", "rotate left", "rotate right", "turn"]),
+      }),
+      Object.freeze({
+        id: "can-move",
+        title: "Sense an open square",
+        syntax: "CAN_MOVE(direction)",
+        explanation: "Return true when the adjacent square in the relative direction is open. direction is left, right, forward, or backward.",
+        searchTerms: Object.freeze(["can move", "sense", "open", "left", "right", "forward", "backward"]),
+      }),
+      Object.freeze({
+        id: "blocked-move",
+        title: "Blocked move",
+        syntax: "MOVE_FORWARD()",
+        explanation: "If the destination is blocked or beyond the grid, the robot stays put and the program terminates.",
+        searchTerms: Object.freeze(["blocked", "wall", "edge", "error", "terminate"]),
+      }),
+    ]),
+  }),
+]);
+
+const COURSE_EXAM_FACTS = Object.freeze({
+  schoolYear: "2026–27",
+  checkedOn: "2026-08-31",
+  items: Object.freeze([
+    Object.freeze({
+      id: "common-notation",
+      label: "Common exam notation",
+      fact: "AP CSP does not designate one programming language. The Exam Reference Sheet supplies common text-based and block-based constructs for assessment.",
+      sourceUrl: SOURCE_URLS.ced,
+      sourceLocation: "Instructional Approaches, printed page 131",
+    }),
+    Object.freeze({
+      id: "big-idea-weight",
+      label: "Algorithms and Programming",
+      fact: "Big Idea 3 accounts for 30–35% of the multiple-choice section.",
+      sourceUrl: SOURCE_URLS.ced,
+      sourceLocation: "Exam Information, printed page 164",
+    }),
+    Object.freeze({
+      id: "exam-delivery",
+      label: "End-of-course exam",
+      fact: "The current end-of-course exam is fully digital in the Bluebook testing app.",
+      sourceUrl: SOURCE_URLS.exam,
+    }),
+    Object.freeze({
+      id: "exam-format",
+      label: "Exam format",
+      fact: "Section I has 70 multiple-choice questions in 120 minutes and is 70% of the score. Section II includes the Create performance task and two written-response questions completed in 60 minutes and is 30%.",
+      sourceUrl: SOURCE_URLS.exam,
+    }),
+    Object.freeze({
+      id: "create-time",
+      label: "Create performance task",
+      fact: "Schools provide at least 9 hours of in-class time for the Create performance task.",
+      sourceUrl: SOURCE_URLS.exam,
+    }),
+    Object.freeze({
+      id: "create-deadline",
+      label: "2027 Create deadline",
+      fact: "The 2026–27 Create performance task submission deadline is April 30, 2027, at 11:59 p.m. ET.",
+      sourceUrl: SOURCE_URLS.assessment,
+    }),
+    Object.freeze({
+      id: "exam-date",
+      label: "2027 exam date",
+      fact: "The AP CSP end-of-course exam is scheduled for May 14, 2027, in Session 1; the local AP coordinator provides the exact time and location.",
+      sourceUrl: SOURCE_URLS.examDates,
+    }),
+    Object.freeze({
+      id: "reference-access",
+      label: "Exam reference access",
+      fact: "AP CSP reference material is available in Bluebook and is also printed and mailed to schools for exam day.",
+      sourceUrl: SOURCE_URLS.referenceInformation,
+    }),
+    Object.freeze({
+      id: "reference-status",
+      label: "2027 reference status",
+      fact: "As checked on August 31, 2026, College Board says 2027 booklet links will be posted in September; meanwhile, the CED appendix contains the same reference information.",
+      sourceUrl: SOURCE_URLS.referenceInformation,
+    }),
+  ]),
+});
+
+const RUNNER_CONVENIENCES = Object.freeze([
+  Object.freeze({
+    id: "line-comments",
+    title: "Line comments",
+    runnerSyntax: "// explanation",
+    officialSyntax: null,
+    explanation: "The runner ignores text after //. Appendix 1 does not define comment syntax.",
+    searchTerms: Object.freeze(["comment", "notes", "slash"]),
+  }),
+  Object.freeze({
+    id: "ascii-assignment",
+    title: "ASCII assignment alias",
+    runnerSyntax: "a <- expression",
+    officialSyntax: "a ← expression",
+    explanation: "Use <- when the official assignment arrow is inconvenient to type.",
+    searchTerms: Object.freeze(["ascii", "alias", "assignment", "arrow"]),
+  }),
+  Object.freeze({
+    id: "ascii-comparisons",
+    title: "ASCII comparison aliases",
+    runnerSyntax: "a != b\na >= b\na <= b",
+    officialSyntax: "a ≠ b\na ≥ b\na ≤ b",
+    explanation: "The runner accepts keyboard-friendly aliases; the symbols at right are the official notation.",
+    searchTerms: Object.freeze(["ascii", "alias", "not equal", "greater", "less"]),
+  }),
+]);
+
+const DISCLAIMER = Object.freeze({
+  short: "Unofficial practice tool; always defer to current College Board materials.",
+  details: Object.freeze([
+    "This runner is an independent educational aid and is not affiliated with or endorsed by College Board.",
+    "Its AP Core reference follows Appendix 1 of the current AP CSP Course and Exam Description, but College Board does not define every lexical or runtime detail needed for a complete interpreter.",
+    "Input parsing, display formatting for compound values, expression precedence beyond the stated arithmetic rules, procedure scope, traversal during list mutation, and execution safety limits are documented runner decisions rather than exam rules.",
+    "AP, Advanced Placement, and AP Computer Science Principles are trademarks of College Board.",
+  ]),
+});
+
+const referenceCategories = REFERENCE_CATEGORIES;
+
+
+
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+const elements = {
+  appShell: $(".app-shell"),
+  aboutButton: $("#about-button"),
+  aboutClose: $("#about-close"),
+  aboutContent: $("#about-content"),
+  aboutDialog: $("#about-dialog"),
+  appStatus: $("#app-status"),
+  clearInputButton: $("#clear-input-button"),
+  codeEditor: $("#code-editor"),
+  codeHighlight: $("#code-highlight"),
+  consoleEmpty: $("#console-empty"),
+  consoleOutput: $("#console-output"),
+  consolePanel: $("#console-panel"),
+  consoleTab: $("#console-tab"),
+  copyOutputButton: $("#copy-output-button"),
+  cursorPosition: $("#cursor-position"),
+  drawerScrim: $("#drawer-scrim"),
+  examplesClose: $("#examples-close"),
+  examplesList: $("#examples-list"),
+  examplesRail: $("#examples-rail"),
+  examplesToggle: $("#examples-toggle"),
+  inputDialog: $("#input-dialog"),
+  inputForm: $("#input-form"),
+  inputQueue: $("#input-queue"),
+  lineCount: $("#line-count"),
+  lineNumbers: $("#line-numbers"),
+  readyDot: $("#ready-dot"),
+  referenceButton: $("#reference-button"),
+  referenceCategories: $("#reference-categories"),
+  referenceClose: $("#reference-close"),
+  referenceDrawer: $("#reference-drawer"),
+  referenceFooterClose: $("#reference-footer-close"),
+  referenceResults: $("#reference-results"),
+  referenceSearch: $("#reference-search"),
+  resetButton: $("#reset-button"),
+  resetRobotButton: $("#reset-robot-button"),
+  robotGrid: $("#robot-grid"),
+  robotPanel: $("#robot-panel"),
+  robotPosition: $("#robot-position"),
+  robotTab: $("#robot-tab"),
+  runBanner: $("#run-banner"),
+  runButton: $("#run-button"),
+  runMessage: $("#run-message"),
+  runtimeInput: $("#runtime-input"),
+  stepBadge: $("#step-badge"),
+  stopButton: $("#stop-button"),
+  summaryInputs: $("#summary-inputs"),
+  summaryOutput: $("#summary-output"),
+  summaryStatus: $("#summary-status"),
+  summarySteps: $("#summary-steps"),
+  summaryTime: $("#summary-time"),
+  syntaxHelp: $("#syntax-help"),
+  themeButton: $("#theme-button"),
+  themeLabel: $("#theme-label"),
+  toast: $("#toast"),
+};
+
+const STORAGE_KEY = "pseudocode-lab:v1";
+const DEFAULT_ROBOT = Object.freeze({
+  rows: 5,
+  columns: 5,
+  start: Object.freeze({ row: 4, column: 2, direction: "north" }),
+  blocked: Object.freeze([{ row: 3, column: 2 }]),
+});
+
+const state = {
+  selectedExampleId: EXAMPLES[0].id,
+  drafts: new Map(),
+  currentOutput: "",
+  currentResult: null,
+  selectedReferenceId: "lists",
+  abortController: null,
+  running: false,
+  lastFocus: null,
+  toastTimer: null,
+  robotConfig: DEFAULT_ROBOT,
+  robotSnapshot: { ...DEFAULT_ROBOT.start },
+  robotTrace: [],
+};
+
+const ICONS = Object.freeze({
+  "first-program": '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 3h11l6 6v20H8V3Z"/><path d="M19 3v7h7M13 15l7 4-7 4v-8Z"/></svg>',
+  conditionals: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="5" r="3"/><circle cx="7" cy="25" r="3"/><circle cx="25" cy="25" r="3"/><path d="M16 8v6M7 22v-3c0-3 2-5 5-5h8c3 0 5 2 5 5v3"/></svg>',
+  loops: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M26 10A11 11 0 0 0 7 7l-2 3M6 22a11 11 0 0 0 19 3l2-3"/><path d="M5 4v6h6M27 28v-6h-6"/></svg>',
+  lists: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="6" cy="8" r="1.5"/><circle cx="6" cy="16" r="1.5"/><circle cx="6" cy="24" r="1.5"/><path d="M12 8h14M12 16h14M12 24h14"/></svg>',
+  procedures: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 4H8v8H4M21 4h3v8h4M11 28H8v-8H4M21 28h3v-8h4"/><path d="M16 8v16M12 12l4-4 4 4M12 20l4 4 4-4"/></svg>',
+  robot: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="9" width="22" height="17" rx="5"/><path d="M16 9V5M13 5h6M10 26v3M22 26v3"/><circle cx="11" cy="17" r="2"/><circle cx="21" cy="17" r="2"/><path d="M11 22h10"/></svg>',
+});
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function highlightCode(source) {
+  const tokenPattern = /"(?:\\.|[^"\\])*"|\/\/.*$|\b(?:PROCEDURE|RETURN|IF|ELSE|REPEAT|UNTIL|TIMES|FOR|EACH|IN|NOT|AND|OR|MOD|true|false)\b|\b(?:DISPLAY|INPUT|RANDOM|LENGTH|INSERT|APPEND|REMOVE|MOVE_FORWARD|ROTATE_LEFT|ROTATE_RIGHT|CAN_MOVE)\b|(?:←|≠|≥|≤|<-|!=|>=|<=|[+\-*\/=<>])|\b\d+(?:\.\d+)?\b/gm;
+  let cursor = 0;
+  let html = "";
+  for (const match of source.matchAll(tokenPattern)) {
+    html += escapeHtml(source.slice(cursor, match.index));
+    const token = match[0];
+    let className = "tok-operator";
+    if (token.startsWith("//")) className = "tok-comment";
+    else if (token.startsWith('"')) className = "tok-string";
+    else if (/^\d/.test(token)) className = "tok-number";
+    else if (/^(DISPLAY|INPUT|RANDOM|LENGTH|INSERT|APPEND|REMOVE|MOVE_FORWARD|ROTATE_LEFT|ROTATE_RIGHT|CAN_MOVE)$/.test(token)) className = "tok-builtin";
+    else if (/^[A-Za-z_]+$/.test(token)) className = "tok-keyword";
+    html += `<span class="${className}">${escapeHtml(token)}</span>`;
+    cursor = match.index + token.length;
+  }
+  html += escapeHtml(source.slice(cursor));
+  return `${html}\n`;
+}
+
+function updateEditorChrome() {
+  const source = elements.codeEditor.value;
+  const lines = source.split("\n").length;
+  elements.codeHighlight.innerHTML = highlightCode(source);
+  elements.lineNumbers.textContent = Array.from({ length: lines }, (_, index) => index + 1).join("\n");
+  elements.lineCount.textContent = `${lines} ${lines === 1 ? "line" : "lines"}`;
+  updateCursorPosition();
+  syncEditorScroll();
+}
+
+function updateCursorPosition() {
+  const value = elements.codeEditor.value;
+  const position = elements.codeEditor.selectionStart;
+  const prior = value.slice(0, position);
+  const line = prior.split("\n").length;
+  const lineStart = prior.lastIndexOf("\n") + 1;
+  const column = position - lineStart + 1;
+  elements.cursorPosition.textContent = `Line ${line}, Column ${column}`;
+}
+
+function syncEditorScroll() {
+  elements.codeHighlight.scrollTop = elements.codeEditor.scrollTop;
+  elements.codeHighlight.scrollLeft = elements.codeEditor.scrollLeft;
+  elements.lineNumbers.scrollTop = elements.codeEditor.scrollTop;
+}
+
+function persistState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      selectedExampleId: state.selectedExampleId,
+      theme: document.documentElement.dataset.theme,
+      drafts: Object.fromEntries(state.drafts),
+      code: elements.codeEditor.value,
+      input: elements.inputQueue.value,
+    }));
+  } catch {
+    // Storage is optional; the standalone runner must still work without it.
+  }
+}
+
+function restoreState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (!saved || typeof saved !== "object") return;
+    if (getExample(saved.selectedExampleId)) state.selectedExampleId = saved.selectedExampleId;
+    if (saved.drafts && typeof saved.drafts === "object") {
+      for (const [id, draft] of Object.entries(saved.drafts)) {
+        if (getExample(id) && typeof draft === "string") state.drafts.set(id, draft);
+      }
+    }
+    if (saved.theme === "dark" || saved.theme === "light") setTheme(saved.theme, false);
+    if (typeof saved.code === "string") state.drafts.set(state.selectedExampleId, saved.code);
+    if (typeof saved.input === "string") elements.inputQueue.dataset.restoredValue = saved.input;
+  } catch {
+    // Ignore malformed or blocked storage.
+  }
+}
+
+function renderExamples() {
+  elements.examplesList.replaceChildren();
+  for (const example of EXAMPLES) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.exampleId = example.id;
+    button.setAttribute("aria-current", String(example.id === state.selectedExampleId));
+    button.title = example.summary;
+    button.innerHTML = `<span class="example-icon">${ICONS[example.id]}</span><span class="example-label">${escapeHtml(example.name)}</span>`;
+    button.addEventListener("click", () => selectExample(example.id));
+    elements.examplesList.append(button);
+  }
+}
+
+function selectExample(id) {
+  const example = getExample(id);
+  if (!example) return;
+  state.drafts.set(state.selectedExampleId, elements.codeEditor.value);
+  state.selectedExampleId = id;
+  elements.codeEditor.value = state.drafts.get(id) ?? example.code;
+  elements.inputQueue.value = example.inputQueue.map(formatInputValue).join("\n");
+  state.robotConfig = example.robot ?? DEFAULT_ROBOT;
+  resetRobotView();
+  renderExamples();
+  updateEditorChrome();
+  clearResults();
+  switchResultTab(example.robot ? "robot" : "console");
+  closeExamplesRail();
+  persistState();
+}
+
+function formatInputValue(value) {
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
+}
+
+function parseInputValue(rawValue) {
+  const value = String(rawValue).trim();
+  if (/^-?(?:\d+\.?\d*|\.\d+)$/.test(value)) return Number(value);
+  if (/^true$/i.test(value)) return true;
+  if (/^false$/i.test(value)) return false;
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("[") && value.endsWith("]"))) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+  return value;
+}
+
+function getInputValues() {
+  const raw = elements.inputQueue.value;
+  if (raw === "") return [];
+  return raw.split(/\r?\n/).map(parseInputValue);
+}
+
+function clearResults() {
+  state.currentOutput = "";
+  state.currentResult = null;
+  elements.consoleOutput.replaceChildren();
+  elements.consoleEmpty.hidden = false;
+  elements.copyOutputButton.disabled = true;
+  setRunBanner("idle", "Ready to run.", 0);
+  setSummary({ status: "Idle", steps: 0, inputs: 0, output: 0, time: "—" });
+  setAppStatus("Ready", "ready");
+}
+
+function setRunBanner(kind, message, steps = 0) {
+  elements.runBanner.className = `run-banner banner-${kind}`;
+  elements.runMessage.textContent = message;
+  elements.stepBadge.textContent = `${steps.toLocaleString()} ${steps === 1 ? "step" : "steps"}`;
+  const path = kind === "success"
+    ? '<circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 9"/>'
+    : kind === "running"
+      ? '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+      : kind === "error"
+        ? '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 17h.01"/>'
+        : '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>';
+  $(".banner-icon svg", elements.runBanner).innerHTML = path;
+}
+
+function setSummary({ status, steps, inputs, output, time }) {
+  elements.summaryStatus.textContent = status;
+  elements.summarySteps.textContent = Number(steps || 0).toLocaleString();
+  elements.summaryInputs.textContent = Number(inputs || 0).toLocaleString();
+  elements.summaryOutput.textContent = Number(output || 0).toLocaleString();
+  elements.summaryTime.textContent = time;
+}
+
+function setAppStatus(message, kind = "ready") {
+  elements.appStatus.textContent = message;
+  const color = kind === "running" ? "var(--blue)" : kind === "error" ? "var(--danger)" : "#39b85a";
+  elements.readyDot.style.background = color;
+}
+
+function setRunning(running) {
+  state.running = running;
+  elements.runButton.disabled = running;
+  elements.stopButton.disabled = !running;
+  elements.resetButton.disabled = running;
+  for (const button of $$("button", elements.examplesList)) button.disabled = running;
+  if (running) {
+    setRunBanner("running", "Running program…", 0);
+    setAppStatus("Running", "running");
+    elements.summaryStatus.textContent = "Running";
+  }
+}
+
+function errorLocation(error) {
+  const loc = error?.primaryLoc ?? error?.loc ?? error?.location;
+  const start = loc?.start ?? loc;
+  const line = Number(start?.line ?? error?.line ?? 0);
+  const column = Number(start?.column ?? error?.column ?? 1);
+  return line > 0 ? { line, column: Math.max(1, column || 1) } : null;
+}
+
+function selectSourceLocation(location) {
+  if (!location) return;
+  const lines = elements.codeEditor.value.split("\n");
+  const line = Math.min(Math.max(1, location.line), lines.length);
+  const start = lines.slice(0, line - 1).reduce((total, text) => total + text.length + 1, 0);
+  const end = start + lines[line - 1].length;
+  elements.codeEditor.focus();
+  elements.codeEditor.setSelectionRange(start, end);
+  const lineHeight = Number.parseFloat(getComputedStyle(elements.codeEditor).lineHeight) || 28;
+  elements.codeEditor.scrollTop = Math.max(0, (line - 4) * lineHeight);
+  syncEditorScroll();
+  updateCursorPosition();
+}
+
+function renderResult(result, elapsedMs) {
+  elements.consoleOutput.replaceChildren();
+  state.currentResult = result;
+  const wasAborted = result?.error?.code === "ABORTED";
+  const rawEntries = Array.isArray(result?.outputEntries) ? result.outputEntries : [];
+  const entries = rawEntries.map((entry) => {
+    if (typeof entry === "string") return entry;
+    return entry?.text ?? entry?.value ?? entry?.output ?? String(entry ?? "");
+  });
+  state.currentOutput = typeof result?.output === "string" ? result.output : entries.join("");
+
+  for (const entry of entries) {
+    const item = document.createElement("li");
+    item.textContent = String(entry).replace(/ $/, "");
+    elements.consoleOutput.append(item);
+  }
+
+  if (!result?.ok && !wasAborted) {
+    const error = result?.error ?? { message: "The program stopped with an unknown error." };
+    const location = errorLocation(error);
+    const item = document.createElement("li");
+    item.className = "output-error";
+    item.textContent = `${location ? `Line ${location.line}: ` : ""}${error.message ?? String(error)}`;
+    if (error.hint) item.textContent += ` — ${error.hint}`;
+    if (location) {
+      item.tabIndex = 0;
+      item.setAttribute("role", "button");
+      item.title = "Jump to source line";
+      item.addEventListener("click", () => selectSourceLocation(location));
+      item.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") selectSourceLocation(location);
+      });
+    }
+    elements.consoleOutput.append(item);
+  }
+
+  elements.consoleEmpty.hidden = elements.consoleOutput.children.length > 0;
+  elements.copyOutputButton.disabled = !state.currentOutput;
+  const steps = result?.steps ?? 0;
+  const elapsed = `${Math.max(0.1, elapsedMs).toFixed(elapsedMs >= 100 ? 0 : 1)} ms`;
+
+  if (result?.ok) {
+    setRunBanner("success", "Program completed successfully.", steps);
+    setAppStatus("Ready", "ready");
+  } else if (wasAborted) {
+    setRunBanner("idle", "Execution stopped.", steps);
+    setAppStatus("Ready", "ready");
+  } else {
+    setRunBanner("error", "Program stopped with an error.", steps);
+    setAppStatus("Error", "error");
+    switchResultTab("console");
+  }
+
+  setSummary({
+    status: result?.ok ? "Completed" : wasAborted ? "Stopped" : "Error",
+    steps,
+    inputs: result?.inputConsumed ?? result?.inputsConsumed ?? 0,
+    output: entries.length,
+    time: elapsed,
+  });
+
+  if (result?.robot || result?.robotTrace) {
+    state.robotSnapshot = result.robot ?? state.robotSnapshot;
+    state.robotTrace = result.robotTrace ?? [];
+    renderRobot(state.robotConfig, state.robotSnapshot, state.robotTrace);
+  }
+}
+
+async function executeProgram() {
+  if (state.running) return;
+  setRunning(true);
+  elements.consoleOutput.replaceChildren();
+  elements.consoleEmpty.hidden = true;
+  const started = performance.now();
+  state.abortController = new AbortController();
+  const example = getExample(state.selectedExampleId);
+  state.robotConfig = example?.robot ?? DEFAULT_ROBOT;
+  resetRobotView();
+
+  try {
+    const result = await runProgramAsync(elements.codeEditor.value, {
+      input: getInputValues(),
+      inputs: getInputValues(),
+      inputQueue: getInputValues(),
+      inputProvider: requestRuntimeInput,
+      robot: state.robotConfig,
+      robotConfig: state.robotConfig,
+      maxSteps: 100_000,
+      stepLimit: 100_000,
+      chunkSize: 500,
+      signal: state.abortController.signal,
+    });
+    renderResult(result, performance.now() - started);
+  } catch (error) {
+    if (error?.name === "AbortError" || state.abortController.signal.aborted) {
+      const stoppedResult = {
+        ok: false,
+        output: state.currentOutput,
+        outputEntries: [],
+        steps: 0,
+        error: { message: "Execution stopped by the user." },
+      };
+      renderResult(stoppedResult, performance.now() - started);
+      setRunBanner("idle", "Execution stopped.", 0);
+      setAppStatus("Ready", "ready");
+      elements.summaryStatus.textContent = "Stopped";
+    } else {
+      renderResult({ ok: false, output: "", outputEntries: [], steps: 0, error }, performance.now() - started);
+    }
+  } finally {
+    setRunning(false);
+    state.abortController = null;
+  }
+}
+
+function stopProgram() {
+  if (!state.running || !state.abortController) return;
+  state.abortController.abort();
+  if (elements.inputDialog.open) elements.inputDialog.close("cancel");
+  setAppStatus("Stopping…", "running");
+}
+
+function requestRuntimeInput(context = {}) {
+  return new Promise((resolve, reject) => {
+    if (state.abortController?.signal.aborted) {
+      reject(new DOMException("Execution stopped", "AbortError"));
+      return;
+    }
+    const location = errorLocation(context);
+    $("#input-dialog-copy").textContent = location
+      ? `The program requested its next value at line ${location.line}.`
+      : "The program requested its next value.";
+    elements.runtimeInput.value = "";
+    elements.inputDialog.showModal();
+    requestAnimationFrame(() => elements.runtimeInput.focus());
+
+    const onClose = () => {
+      elements.inputDialog.removeEventListener("close", onClose);
+      if (elements.inputDialog.returnValue === "submit") {
+        const raw = elements.runtimeInput.value;
+        elements.inputQueue.value += `${elements.inputQueue.value ? "\n" : ""}${raw}`;
+        resolve(parseInputValue(raw));
+      } else {
+        reject(new DOMException("INPUT() cancelled", "AbortError"));
+      }
+    };
+    elements.inputDialog.addEventListener("close", onClose);
+  });
+}
+
+function switchResultTab(tabName) {
+  const showRobot = tabName === "robot";
+  elements.consoleTab.setAttribute("aria-selected", String(!showRobot));
+  elements.robotTab.setAttribute("aria-selected", String(showRobot));
+  elements.consolePanel.hidden = showRobot;
+  elements.robotPanel.hidden = !showRobot;
+}
+
+function resetRobotView() {
+  state.robotSnapshot = { ...state.robotConfig.start };
+  state.robotTrace = [{ ...state.robotConfig.start }];
+  renderRobot(state.robotConfig, state.robotSnapshot, state.robotTrace);
+}
+
+function renderRobot(config, snapshot, trace = []) {
+  if (!config || !snapshot) return;
+  const rows = Number(config.rows ?? 5);
+  const columns = Number(config.columns ?? config.cols ?? 5);
+  const blocked = new Set((config.blocked ?? []).map((cell) => `${cell.row}:${cell.column ?? cell.col}`));
+  const visited = new Set((trace ?? []).map((cell) => `${cell.row}:${cell.column ?? cell.col}`));
+  const startKey = `${config.start.row}:${config.start.column ?? config.start.col}`;
+  const robotColumn = snapshot.column ?? snapshot.col;
+  const robotKey = `${snapshot.row}:${robotColumn}`;
+  const direction = String(snapshot.direction ?? "north").toLowerCase();
+  const angle = { north: 0, east: 90, south: 180, west: 270 }[direction] ?? 0;
+
+  elements.robotGrid.style.setProperty("--robot-columns", columns);
+  elements.robotGrid.style.setProperty("--robot-rows", rows);
+  elements.robotGrid.replaceChildren();
+  for (let row = 1; row <= rows; row += 1) {
+    for (let column = 1; column <= columns; column += 1) {
+      const key = `${row}:${column}`;
+      const cell = document.createElement("div");
+      cell.className = "robot-cell";
+      if (key === startKey) cell.classList.add("is-start");
+      if (blocked.has(key)) cell.classList.add("is-blocked");
+      if (visited.has(key) && !blocked.has(key)) cell.classList.add("is-path");
+      cell.title = `Row ${row}, Column ${column}${blocked.has(key) ? " — blocked" : ""}`;
+      if (key === robotKey) {
+        const token = document.createElement("div");
+        token.className = "robot-token";
+        token.style.setProperty("--robot-angle", `${angle}deg`);
+        token.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 7 14-7-3-7 3 7-14Z"/></svg>';
+        cell.append(token);
+      }
+      elements.robotGrid.append(cell);
+    }
+  }
+  elements.robotPosition.textContent = `Row ${snapshot.row}, Column ${robotColumn} · ${direction}`;
+  elements.robotGrid.setAttribute("aria-label", `${rows} by ${columns} robot grid. Robot at row ${snapshot.row}, column ${robotColumn}, facing ${direction}.`);
+}
+
+function renderReferenceCategories() {
+  elements.referenceCategories.replaceChildren();
+  for (const category of REFERENCE_CATEGORIES) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.categoryId = category.id;
+    button.textContent = category.name;
+    button.setAttribute("aria-current", String(category.id === state.selectedReferenceId));
+    button.addEventListener("click", () => {
+      state.selectedReferenceId = category.id;
+      elements.referenceSearch.value = "";
+      renderReferenceCategories();
+      renderReferenceResults();
+    });
+    elements.referenceCategories.append(button);
+  }
+}
+
+function searchableText(category, entry) {
+  return [
+    category.name,
+    category.description,
+    entry.title,
+    entry.syntax,
+    entry.explanation,
+    ...(entry.searchTerms ?? []),
+  ].join(" ").toLowerCase();
+}
+
+function createReferenceEntry(category, entry, { includeCategory = false } = {}) {
+  const wrapper = document.createElement("article");
+  wrapper.className = "reference-entry";
+  wrapper.innerHTML = `
+    <div class="reference-entry-header">
+      <div>
+        ${includeCategory ? `<p class="reference-category-label">${escapeHtml(category.name)}</p>` : ""}
+        <code>${escapeHtml(entry.syntax)}</code>
+      </div>
+      <button class="copy-snippet" type="button" aria-label="Copy ${escapeHtml(entry.title)} syntax" title="Copy syntax">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+    <p><strong>${escapeHtml(entry.title)}.</strong> ${escapeHtml(entry.explanation)}</p>
+  `;
+  $(".copy-snippet", wrapper).addEventListener("click", () => copyText(entry.syntax, "Syntax copied."));
+  return wrapper;
+}
+
+function renderReferenceResults() {
+  const query = elements.referenceSearch.value.trim().toLowerCase();
+  elements.referenceResults.replaceChildren();
+  if (query) {
+    const matches = [];
+    for (const category of REFERENCE_CATEGORIES) {
+      for (const entry of category.entries) {
+        if (searchableText(category, entry).includes(query)) matches.push({ category, entry });
+      }
+    }
+    for (const convenience of RUNNER_CONVENIENCES) {
+      const haystack = [convenience.title, convenience.runnerSyntax, convenience.officialSyntax, convenience.explanation, ...(convenience.searchTerms ?? [])].join(" ").toLowerCase();
+      if (haystack.includes(query)) {
+        matches.push({
+          category: { name: "Runner conveniences" },
+          entry: { title: convenience.title, syntax: convenience.runnerSyntax, explanation: convenience.explanation },
+        });
+      }
+    }
+    if (!matches.length) {
+      const empty = document.createElement("div");
+      empty.className = "reference-empty";
+      empty.textContent = `No reference entries match “${elements.referenceSearch.value.trim()}”.`;
+      elements.referenceResults.append(empty);
+      return;
+    }
+    for (const match of matches) elements.referenceResults.append(createReferenceEntry(match.category, match.entry, { includeCategory: true }));
+    return;
+  }
+
+  const category = REFERENCE_CATEGORIES.find((item) => item.id === state.selectedReferenceId) ?? REFERENCE_CATEGORIES[0];
+  const intro = document.createElement("div");
+  intro.className = "reference-section-intro";
+  intro.textContent = category.description;
+  elements.referenceResults.append(intro);
+  for (const entry of category.entries) elements.referenceResults.append(createReferenceEntry(category, entry));
+  if (category.note) {
+    const note = document.createElement("div");
+    note.className = "reference-note";
+    note.textContent = category.note;
+    elements.referenceResults.append(note);
+  }
+}
+
+function openReference() {
+  state.lastFocus = document.activeElement;
+  elements.referenceButton.setAttribute("aria-expanded", "true");
+  elements.referenceDrawer.classList.add("is-open");
+  elements.referenceDrawer.setAttribute("aria-hidden", "false");
+  elements.drawerScrim.hidden = false;
+  requestAnimationFrame(() => elements.drawerScrim.classList.add("is-open"));
+  elements.appShell.inert = true;
+  setTimeout(() => elements.referenceSearch.focus(), 180);
+}
+
+function closeReference() {
+  elements.referenceButton.setAttribute("aria-expanded", "false");
+  elements.referenceDrawer.classList.remove("is-open");
+  elements.referenceDrawer.setAttribute("aria-hidden", "true");
+  elements.drawerScrim.classList.remove("is-open");
+  elements.appShell.inert = false;
+  setTimeout(() => { elements.drawerScrim.hidden = true; }, 190);
+  state.lastFocus?.focus?.();
+}
+
+function renderAbout() {
+  const weights = [
+    ["Creative Development", "10–13%", 34],
+    ["Data", "17–22%", 57],
+    ["Algorithms and Programming", "30–35%", 100],
+    ["Computer Systems and Networks", "11–15%", 40],
+    ["Impact of Computing", "21–26%", 74],
+  ];
+  const facts = COURSE_EXAM_FACTS.items;
+  elements.aboutContent.innerHTML = `
+    <p class="about-lede">Your memory is right: AP Computer Science Principles does not prescribe one classroom programming language. College Board uses a shared Exam Reference Sheet notation so algorithms and programming ideas can be assessed consistently.</p>
+    <div class="about-callout"><strong>What this tool is.</strong> A browser-based implementation of the text notation in Appendix 1 of the current Course and Exam Description. It is a practice aid, not a substitute for learning a real programming language or for current official materials.</div>
+    <div class="about-grid">
+      <section class="about-section">
+        <h3>The five big ideas</h3>
+        <div class="weight-list">
+          ${weights.map(([name, weight, width]) => `<div class="weight-row"><div class="weight-copy"><strong>${name}</strong><div class="weight-track"><i style="--weight:${width}%"></i></div></div><span>${weight}</span></div>`).join("")}
+        </div>
+        <p>Algorithms and Programming is the largest multiple-choice content area. A completed high-school algebra course is the recommended prerequisite; prior computer science is not required.</p>
+      </section>
+      <section class="about-section">
+        <h3>Current 2026–27 assessment</h3>
+        <ul>
+          ${facts.slice(2, 7).map((item) => `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.fact)}</li>`).join("")}
+        </ul>
+      </section>
+    </div>
+    <div class="source-list">
+      <strong>Official sources checked ${escapeHtml(COURSE_EXAM_FACTS.checkedOn)}</strong>
+      ${COLLEGE_BOARD_SOURCES.map((source) => `<a href="${source.url}" target="_blank" rel="noreferrer">${escapeHtml(source.label)} <span aria-hidden="true">↗</span></a>`).join("")}
+      <p>${escapeHtml(DISCLAIMER.details[0])} ${escapeHtml(DISCLAIMER.details[3])}</p>
+    </div>
+  `;
+}
+
+function openAbout() {
+  renderAbout();
+  elements.aboutDialog.showModal();
+}
+
+function setTheme(theme, announce = true) {
+  document.documentElement.dataset.theme = theme;
+  elements.themeLabel.textContent = theme === "dark" ? "Dark" : "Light";
+  elements.themeButton.setAttribute("aria-label", `Switch to ${theme === "dark" ? "light" : "dark"} theme`);
+  if (announce) showToast(`${theme === "dark" ? "Dark" : "Light"} theme enabled.`);
+  persistState();
+}
+
+function toggleTheme() {
+  setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+}
+
+function openExamplesRail() {
+  elements.examplesRail.classList.add("is-open");
+  elements.examplesToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeExamplesRail() {
+  elements.examplesRail.classList.remove("is-open");
+  elements.examplesToggle.setAttribute("aria-expanded", "false");
+}
+
+async function copyText(text, successMessage = "Copied to clipboard.") {
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      helper.style.position = "fixed";
+      helper.style.opacity = "0";
+      document.body.append(helper);
+      helper.select();
+      document.execCommand("copy");
+      helper.remove();
+    }
+    showToast(successMessage);
+  } catch {
+    showToast("Copy failed. Select the text and copy it manually.");
+  }
+}
+
+function showToast(message) {
+  clearTimeout(state.toastTimer);
+  elements.toast.textContent = message;
+  elements.toast.classList.add("is-visible");
+  state.toastTimer = setTimeout(() => elements.toast.classList.remove("is-visible"), 2200);
+}
+
+function bindEvents() {
+  elements.codeEditor.addEventListener("input", () => {
+    updateEditorChrome();
+    state.drafts.set(state.selectedExampleId, elements.codeEditor.value);
+    persistState();
+  });
+  elements.codeEditor.addEventListener("scroll", syncEditorScroll);
+  elements.codeEditor.addEventListener("click", updateCursorPosition);
+  elements.codeEditor.addEventListener("keyup", updateCursorPosition);
+  elements.codeEditor.addEventListener("select", updateCursorPosition);
+  elements.codeEditor.addEventListener("keydown", (event) => {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const { selectionStart, selectionEnd, value } = elements.codeEditor;
+      elements.codeEditor.value = `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`;
+      elements.codeEditor.setSelectionRange(selectionStart + 2, selectionStart + 2);
+      elements.codeEditor.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+
+  elements.runButton.addEventListener("click", executeProgram);
+  elements.stopButton.addEventListener("click", stopProgram);
+  elements.resetButton.addEventListener("click", () => {
+    const example = getExample(state.selectedExampleId);
+    state.drafts.delete(state.selectedExampleId);
+    elements.codeEditor.value = example?.code ?? "";
+    elements.inputQueue.value = (example?.inputQueue ?? []).map(formatInputValue).join("\n");
+    state.robotConfig = example?.robot ?? DEFAULT_ROBOT;
+    resetRobotView();
+    updateEditorChrome();
+    clearResults();
+    persistState();
+    showToast("Example reset.");
+  });
+  elements.clearInputButton.addEventListener("click", () => {
+    elements.inputQueue.value = "";
+    elements.inputQueue.focus();
+    persistState();
+  });
+  elements.inputQueue.addEventListener("input", persistState);
+  elements.copyOutputButton.addEventListener("click", () => copyText(state.currentOutput, "Console output copied."));
+
+  elements.consoleTab.addEventListener("click", () => switchResultTab("console"));
+  elements.robotTab.addEventListener("click", () => switchResultTab("robot"));
+  elements.resetRobotButton.addEventListener("click", resetRobotView);
+
+  elements.referenceButton.addEventListener("click", openReference);
+  elements.syntaxHelp.addEventListener("click", openReference);
+  elements.referenceClose.addEventListener("click", closeReference);
+  elements.referenceFooterClose.addEventListener("click", closeReference);
+  elements.drawerScrim.addEventListener("click", closeReference);
+  elements.referenceSearch.addEventListener("input", renderReferenceResults);
+
+  elements.aboutButton.addEventListener("click", openAbout);
+  elements.aboutClose.addEventListener("click", () => elements.aboutDialog.close());
+  elements.aboutDialog.addEventListener("click", (event) => {
+    if (event.target === elements.aboutDialog) elements.aboutDialog.close();
+  });
+
+  elements.themeButton.addEventListener("click", toggleTheme);
+  elements.examplesToggle.addEventListener("click", () => {
+    if (elements.examplesRail.classList.contains("is-open")) closeExamplesRail();
+    else openExamplesRail();
+  });
+  elements.examplesClose.addEventListener("click", closeExamplesRail);
+
+  document.addEventListener("keydown", (event) => {
+    const modifier = event.metaKey || event.ctrlKey;
+    if (modifier && event.key === "Enter") {
+      event.preventDefault();
+      executeProgram();
+    } else if (event.key === "Escape") {
+      if (state.running) stopProgram();
+      else if (elements.referenceDrawer.classList.contains("is-open")) closeReference();
+      else closeExamplesRail();
+    }
+  });
+}
+
+function initialize() {
+  restoreState();
+  renderExamples();
+  renderReferenceCategories();
+  renderReferenceResults();
+  bindEvents();
+  const selected = getExample(state.selectedExampleId) ?? EXAMPLES[0];
+  elements.codeEditor.value = state.drafts.get(selected.id) ?? selected.code;
+  elements.inputQueue.value = elements.inputQueue.dataset.restoredValue ?? selected.inputQueue.map(formatInputValue).join("\n");
+  state.robotConfig = selected.robot ?? DEFAULT_ROBOT;
+  updateEditorChrome();
+  resetRobotView();
+  clearResults();
+  switchResultTab(selected.robot ? "robot" : "console");
+  requestAnimationFrame(() => {
+    elements.codeEditor.focus({ preventScroll: true });
+    if (selected.id === "first-program") setTimeout(executeProgram, 120);
+  });
+}
+
+initialize();
+
+})();
+    </script>
+  </body>
+</html>
